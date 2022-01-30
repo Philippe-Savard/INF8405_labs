@@ -2,9 +2,9 @@ package com.inf8405.tp1;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
+
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
+
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -19,6 +19,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        hideToolBr();
     }
 
     // Create a pop up window when about button is clicked
@@ -47,11 +48,22 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void hideToolBr() {
+
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+
+        uiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        uiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        uiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+    }
+
     public void onButtonCloseApp(View view){
         finish();
     }
 
     public void onButtonPlay(View view){
-        startActivity(new Intent(MainActivity.this, puzzlePage.class));
+        startActivity(new Intent(MainActivity.this, PuzzleActivity.class));
     }
 }
