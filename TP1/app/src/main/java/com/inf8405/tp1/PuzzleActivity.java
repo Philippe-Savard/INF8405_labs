@@ -69,6 +69,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     }
 
     public void onButtonPauseClick(View view) {
-        startActivity(new Intent(PuzzleActivity.this, MainActivity.class));
+        finish();
     }
 }

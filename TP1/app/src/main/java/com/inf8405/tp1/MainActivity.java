@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -15,11 +16,18 @@ import android.widget.PopupWindow;
 
 public class MainActivity extends AppCompatActivity {
 
+    boolean isBufferedClick = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         hideToolBr();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isBufferedClick = false;
     }
 
     // Create a pop up window when about button is clicked
@@ -63,7 +71,12 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    public void onButtonPlay(View view){
-        startActivity(new Intent(MainActivity.this, PuzzleActivity.class));
+    public void onButtonPlay(View view) {
+        if (!isBufferedClick) {
+            startActivity(new Intent(MainActivity.this, PuzzleActivity.class));
+            isBufferedClick = true;
+        }
     }
+
+
 }
