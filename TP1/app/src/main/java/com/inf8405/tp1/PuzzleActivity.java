@@ -13,7 +13,8 @@ import android.widget.ImageView;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
 
-    ImageView _star;
+    ImageView _bloc1;
+    ImageView _bloc2;
     ViewGroup _board;
     private int _dx;
     private int _dy;
@@ -26,8 +27,10 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         hideToolBr();
 
         _board = (ViewGroup) findViewById(R.id.layout_middle_gameboard);
-        _star = findViewById(R.id.imageView);
-        _star.setOnTouchListener(this);
+        _bloc1 = findViewById(R.id.bloc1);
+        _bloc2 = findViewById((R.id.bloc2));
+        _bloc1.setOnTouchListener(this);
+        _bloc2.setOnTouchListener(this);
     }
 
     public void hideToolBr() {
@@ -57,8 +60,11 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 break;
             case MotionEvent.ACTION_MOVE:
                 // The player start moving the view on screen
-                lParams.leftMargin = x - _dx;
-                lParams.topMargin = y - _dy;
+                if(lParams.width < lParams.height){
+                    lParams.topMargin = y - _dy;
+                } else {
+                    lParams.leftMargin = x - _dx;
+                }
                 view.setLayoutParams(lParams);
                 break;
             default:
