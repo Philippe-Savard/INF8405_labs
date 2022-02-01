@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="250dp"
         android:background="@drawable/repeating_background"
-        app:layout_constraintBottom_toTopOf="@+id/view_middle"
+        app:layout_constraintBottom_toTopOf="@+id/layout_middle_gameboard"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -305,8 +305,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <View
-        android:id="@+id/view_middle"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_middle_gameboard"
         android:layout_width="370dp"
         android:layout_height="370dp"
         android:layout_marginLeft="10dp"
@@ -315,12 +315,37 @@
         android:layout_marginBottom="10dp"
         android:background="@drawable/rounded_corner_view"
         android:backgroundTint="#171717"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:elevation="0.5dp"
         android:fadingEdge="horizontal"
         app:layout_constraintBottom_toTopOf="@id/view_bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_top" />
+        app:layout_constraintTop_toBottomOf="@+id/view_top">
+
+
+        <ImageView
+            android:id="@+id/bloc1"
+            android:layout_width="60dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/bloc2"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="156dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
         android:id="@+id/view_bottom"
@@ -332,7 +357,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/view_middle" />
+        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard" />
 
     <Button
         android:id="@+id/btn_reset"
@@ -401,7 +426,7 @@
         app:layout_constraintEnd_toEndOf="@+id/view_bottom"
         app:layout_constraintHorizontal_bias="0.054"
         app:layout_constraintStart_toStartOf="@+id/view_bottom"
-        app:layout_constraintTop_toBottomOf="@+id/view_middle"
+        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard"
         app:layout_constraintVertical_bias="0.557"
         app:strokeColor="#006F3B3B"
         tools:ignore="SpeakableTextPresentCheck" />
