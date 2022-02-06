@@ -10,13 +10,19 @@ import java.util.Stack;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.media.Image;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
@@ -133,8 +139,8 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         }
     }
 
-    public void victory(){
-        _moveCount.setText(Integer.toString(99));
+    public void victory(View view){
+        this.onPuzzlePassed(view);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -218,14 +224,14 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                     moveCount++;
                     _moveCount.setText(Integer.toString(moveCount));
                 }
+                if(gridArray[6][2] == 1){
+                    victory(view);
+                }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 updateBlocGrid(view, true);
             default:
                 break;
-        }
-        if(gridArray[6][2] == 1){
-            victory();
         }
         _board.invalidate();
         return true;
@@ -247,6 +253,38 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
             onButtonUndo(view);
         }while(!stateStack.empty());
     }
+
+    // Create a pop up window when puzzle is solved
+    public void onPuzzlePassed(View view) {
+        // inflate the layout of the popup window
+        LayoutInflater inflater = (LayoutInflater)
+                getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.winnerwindow, null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.MATCH_PARENT;
+        int height = LinearLayout.LayoutParams.MATCH_PARENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
+
+        // show the popup window
+        popupWindow.setAnimationStyle(R.style.Animation);
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+
+        // Play the media sound
+        MediaPlayer song = MediaPlayer.create(popupView.getContext(), R.raw.ring);
+        song.start();
+
+        new CountDownTimer(3000, 1000) {
+            public void onTick(long millisUntilFinished) {
+                // Do nothing
+            }
+            public void onFinish() {
+                popupWindow.dismiss();
+            }
+
+        }.start();
+    }
+
 
     public void onButtonPauseClick(View view) {
         finish();

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/about_names"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#8A939292">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:id="@+id/bottomView"
+            android:layout_width="380dp"
+            android:layout_height="193dp"
+            android:background="@drawable/rounded_corner_view"
+            android:backgroundTint="#171717"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.483"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.433" />
+
+        <ImageView
+            android:id="@+id/middlepic"
+            android:layout_width="340dp"
+            android:layout_height="147dp"
+            android:background="@drawable/passed"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.492"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.375" />
+
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="342dp"
+            android:layout_height="59dp"
+            android:text="You solved the puzzle!"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textSize="28sp"
+            app:layout_constraintBottom_toBottomOf="@+id/bottomView"
+            app:layout_constraintEnd_toEndOf="@+id/bottomView"
+            app:layout_constraintHorizontal_bias="0.497"
+            app:layout_constraintStart_toStartOf="@+id/bottomView"
+            app:layout_constraintTop_toTopOf="@+id/bottomView"
+            app:layout_constraintVertical_bias="0.827" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</RelativeLayout>
