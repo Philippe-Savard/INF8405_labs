@@ -9,6 +9,7 @@ import java.util.Stack;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
@@ -16,14 +17,23 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
     int[][] stackedGrid;
-    int[][] gridArray = new int[7][7];
+    int[][] gridArray = new int[8][8];
     int moveCount = 0;
+    int gridElementSize;
     Stack<Object[]> stateStack = new Stack<>();
     ImageView _bloc1;
     ImageView _bloc2;
+    ImageView _bloc3;
+    ImageView _bloc4;
+    ImageView _bloc5;
+    ImageView _bloc6;
+    ImageView _bloc7;
+    ImageView _bloc8;
+    TextView _moveCount;
     ViewGroup _board;
     private int _dx;
     private int _dy;
@@ -37,11 +47,33 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         _board = (ViewGroup) findViewById(R.id.layout_middle_gameboard);
         _bloc1 = findViewById(R.id.bloc1);
         _bloc2 = findViewById((R.id.bloc2));
+        _bloc3 = findViewById(R.id.bloc3);
+        _bloc4 = findViewById((R.id.bloc4));
+        _bloc5 = findViewById(R.id.bloc5);
+        _bloc6 = findViewById((R.id.bloc6));
+        _bloc7 = findViewById(R.id.bloc7);
+        _bloc8 = findViewById((R.id.bloc8));
+        _moveCount = findViewById(R.id.txt_moves_num);
         _bloc1.setOnTouchListener(this);
         _bloc2.setOnTouchListener(this);
+        _bloc3.setOnTouchListener(this);
+        _bloc4.setOnTouchListener(this);
+        _bloc5.setOnTouchListener(this);
+        _bloc6.setOnTouchListener(this);
+        _bloc7.setOnTouchListener(this);
+        _bloc8.setOnTouchListener(this);
+
+
+        defineGridElementSize();
         gridFill();
         updateBlocGrid(_bloc1, true);
         updateBlocGrid(_bloc2, true);
+        updateBlocGrid(_bloc3, true);
+        updateBlocGrid(_bloc4, true);
+        updateBlocGrid(_bloc5, true);
+        updateBlocGrid(_bloc6, true);
+        updateBlocGrid(_bloc7, true);
+        updateBlocGrid(_bloc8, true);
     }
 
     public void hideToolBr() {
@@ -54,12 +86,18 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
 
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
+
+    public void defineGridElementSize(){
+        ViewGroup.LayoutParams lParams = (ConstraintLayout.LayoutParams) _bloc1.getLayoutParams();
+        gridElementSize = lParams.height > lParams.width ? lParams.width : lParams.height;
+    }
+
     public void gridFill() {
-        for(int i = 0; i < 7; i++){
-            for(int j = 0; j < 7; j++){
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
                 if(i == 6 && j == 2){
                     gridArray[i][j] = 0;
-                } else if(i == 6 || j == 6){
+                } else if(i >= 6 || j >= 6){
                     gridArray[i][j] = 1;
                 } else{
                     gridArray[i][j] = 0;
@@ -67,12 +105,13 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
             }
         }
     }
+
     public void updateBlocGrid(View view, boolean isAdd){
         ConstraintLayout.LayoutParams lParams = (ConstraintLayout.LayoutParams) view.getLayoutParams();
         boolean isBlocVertical = lParams.height > lParams.width;
         int blocSize = lParams.height > lParams.width ? Math.round(lParams.height / lParams.width) : Math.round(lParams.width / lParams.height);
-        int horizontalPosition = Math.max(lParams.leftMargin / 165, 0);
-        int verticalPosition = Math.max(lParams.topMargin / 165, 0);
+        int horizontalPosition = Math.max(lParams.leftMargin / gridElementSize, 0);
+        int verticalPosition = Math.max(lParams.topMargin / gridElementSize, 0);
         if(isBlocVertical){
             for(int i = 0; i < blocSize; i++){
                 gridArray[horizontalPosition][verticalPosition + i] = isAdd ? 1 : 0;
@@ -86,12 +125,16 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
 
 
     public void checkGrid(){
-        for(int i = 0; i < 7; i++){
-            for(int j = 0; j < 7; j++){
+        for(int i = 0; i < 8; i++){
+            for(int j = 0; j < 8; j++){
                 System.out.print(gridArray[i][j] + ",");
             }
             System.out.println();
         }
+    }
+
+    public void victory(){
+        _moveCount.setText(Integer.toString(99));
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -119,19 +162,19 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 } else {
                     lParams.leftMargin = Math.max(x - _dx, 0);
                 }
-                int horizontalFloor = Math.max(lParams.leftMargin / 165, 0);
-                int verticalFloor = Math.max(lParams.topMargin / 165, 0);
-                int horizontalCeil = (int) Math.max(Math.ceil(lParams.leftMargin / 165), 0);
-                int verticalCeil = (int) Math.max(Math.ceil(lParams.topMargin / 165), 0);
+                int horizontalFloor = Math.max(lParams.leftMargin / gridElementSize, 0);
+                int verticalFloor = Math.max(lParams.topMargin / gridElementSize, 0);
+                int horizontalCeil = (int) Math.max(Math.ceil(lParams.leftMargin / gridElementSize), 0);
+                int verticalCeil = (int) Math.max(Math.ceil(lParams.topMargin / gridElementSize), 0);
                 if(isBlocVertical){
                     if(gridArray[horizontalFloor][verticalFloor] == 1) {
-                        lParams.topMargin = (verticalFloor + 1) * 165;
+                        lParams.topMargin = (verticalFloor + 1) * gridElementSize;
                         _dx = x - lParams.leftMargin;
                         _dy = y - lParams.topMargin;
                         break;
                     }
                     if(gridArray[horizontalCeil][verticalCeil + blocSize] == 1) {
-                        lParams.topMargin = (verticalCeil) * 165;
+                        lParams.topMargin = (verticalCeil) * gridElementSize;
                         _dx = x - lParams.leftMargin;
                         _dy = y - lParams.topMargin;
                         break;
@@ -139,13 +182,13 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
 
                 } else {
                     if(gridArray[horizontalFloor][verticalFloor] == 1) {
-                        lParams.leftMargin = (horizontalFloor + 1) * 165;
+                        lParams.leftMargin = (horizontalFloor + 1) * gridElementSize;
                         _dx = x - lParams.leftMargin;
                         _dy = y - lParams.topMargin;
                         break;
                     }
                     if(gridArray[horizontalCeil + blocSize][verticalCeil] == 1) {
-                        lParams.leftMargin = (horizontalCeil) * 165;
+                        lParams.leftMargin = (horizontalCeil) * gridElementSize;
                         _dx = x - lParams.leftMargin;
                         _dy = y - lParams.topMargin;
                         break;
@@ -155,16 +198,16 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 break;
             case MotionEvent.ACTION_UP:
                 if(isBlocVertical){
-                    if(lParams.topMargin % 165 > 82){
-                        lParams.topMargin += 165 - lParams.topMargin % 165;
+                    if(lParams.topMargin % gridElementSize > gridElementSize / 2){
+                        lParams.topMargin += gridElementSize - lParams.topMargin % gridElementSize;
                     } else {
-                        lParams.topMargin -= lParams.topMargin % 165;
+                        lParams.topMargin -= lParams.topMargin % gridElementSize;
                     }
                 } else {
-                    if(lParams.leftMargin % 165 > 82){
-                        lParams.leftMargin += 165 - lParams.leftMargin % 165;
+                    if(lParams.leftMargin % gridElementSize > gridElementSize / 2){
+                        lParams.leftMargin += gridElementSize - lParams.leftMargin % gridElementSize;
                     } else {
-                        lParams.leftMargin -= lParams.leftMargin % 165;
+                        lParams.leftMargin -= lParams.leftMargin % gridElementSize;
                     }
                 }
                 view.setLayoutParams(lParams);
@@ -173,13 +216,16 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                     stateStack.pop();
                 } else {
                     moveCount++;
-                    System.out.println(moveCount);
+                    _moveCount.setText(Integer.toString(moveCount));
                 }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 updateBlocGrid(view, true);
             default:
                 break;
+        }
+        if(gridArray[6][2] == 1){
+            victory();
         }
         _board.invalidate();
         return true;
@@ -192,7 +238,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         ImageView bloc = findViewById(((View) undo[1]).getId());
         bloc.setLayoutParams((ConstraintLayout.LayoutParams) undo[2]);
         moveCount--;
-        System.out.println(moveCount);
+        _moveCount.setText(Integer.toString(moveCount));
     }
 
     public void onButtonReset(View view) {
