@@ -14,7 +14,7 @@
         android:layout_width="wrap_content"
         android:layout_height="250dp"
         android:background="@drawable/repeating_background"
-        app:layout_constraintBottom_toTopOf="@+id/layout_middle_gameboard"
+        app:layout_constraintBottom_toTopOf="@+id/layout_middle_gameboard1"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -88,6 +88,7 @@
         android:layout_width="75dp"
         android:layout_height="50dp"
         android:background="#00FFFFFF"
+        android:onClick="onPreviousPuzzle"
         app:cornerRadius="100sp"
         app:icon="@android:drawable/ic_media_rew"
         app:iconSize="50sp"
@@ -106,6 +107,7 @@
         android:layout_height="50dp"
         android:layout_marginStart="96dp"
         android:background="#00FFFFFF"
+        android:onClick="onNextPuzzle"
         app:cornerRadius="100sp"
         app:icon="@android:drawable/ic_media_ff"
         app:iconSize="50sp"
@@ -306,7 +308,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_middle_gameboard"
+        android:id="@+id/layout_middle_gameboard1"
         android:layout_width="360dp"
         android:layout_height="360dp"
         android:layout_marginLeft="10dp"
@@ -319,6 +321,7 @@
         android:clipToPadding="false"
         android:elevation="0.5dp"
         android:fadingEdge="horizontal"
+        android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@id/view_bottom"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -326,7 +329,7 @@
 
 
         <ImageView
-            android:id="@+id/bloc1"
+            android:id="@+id/puzzle1_bloc1"
             android:layout_width="120dp"
             android:layout_height="60dp"
             android:layout_marginStart="0dp"
@@ -336,7 +339,7 @@
             app:srcCompat="@drawable/bloc" />
 
         <ImageView
-            android:id="@+id/bloc2"
+            android:id="@+id/puzzle1_bloc2"
             android:layout_width="60dp"
             android:layout_height="120dp"
             android:layout_marginStart="0dp"
@@ -346,7 +349,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc3"
+            android:id="@+id/puzzle1_bloc3"
             android:layout_width="180dp"
             android:layout_height="60dp"
             android:layout_marginStart="0dp"
@@ -356,7 +359,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc4"
+            android:id="@+id/puzzle1_bloc4"
             android:layout_width="60dp"
             android:layout_height="180dp"
             android:layout_marginStart="120dp"
@@ -366,7 +369,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc5"
+            android:id="@+id/puzzle1_bloc5"
             android:layout_width="180dp"
             android:layout_height="60dp"
             android:layout_marginStart="0dp"
@@ -376,7 +379,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc6"
+            android:id="@+id/puzzle1_bloc6"
             android:layout_width="60dp"
             android:layout_height="180dp"
             android:layout_marginStart="300dp"
@@ -386,7 +389,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc7"
+            android:id="@+id/puzzle1_bloc7"
             android:layout_width="120dp"
             android:layout_height="60dp"
             android:layout_marginStart="240dp"
@@ -396,7 +399,7 @@
             app:srcCompat="@drawable/bloc_regular" />
 
         <ImageView
-            android:id="@+id/bloc8"
+            android:id="@+id/puzzle1_bloc8"
             android:layout_width="60dp"
             android:layout_height="120dp"
             android:layout_marginStart="240dp"
@@ -406,6 +409,212 @@
             app:srcCompat="@drawable/bloc_regular" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_middle_gameboard2"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_corner_view"
+        android:backgroundTint="#171717"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="0.5dp"
+        android:fadingEdge="horizontal"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/view_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_top">
+
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc1"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="120dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc2"
+            android:layout_width="60dp"
+            android:layout_height="120dp"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="240dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc3"
+            android:layout_width="60dp"
+            android:layout_height="120dp"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc4"
+            android:layout_width="60dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="180dp"
+            android:layout_marginTop="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc5"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="300dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc6"
+            android:layout_width="60dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="240dp"
+            android:layout_marginTop="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc7"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="180dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle2_bloc8"
+            android:layout_width="60dp"
+            android:layout_height="120dp"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="180dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_middle_gameboard3"
+        android:layout_width="360dp"
+        android:layout_height="360dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_corner_view"
+        android:backgroundTint="#171717"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:elevation="0.5dp"
+        android:fadingEdge="horizontal"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/view_bottom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/view_top">
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc1"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="120dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc2"
+            android:layout_width="180dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="240dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc3"
+            android:layout_width="60dp"
+            android:layout_height="120dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc4"
+            android:layout_width="60dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="180dp"
+            android:layout_marginTop="120dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc5"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="60dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc6"
+            android:layout_width="60dp"
+            android:layout_height="180dp"
+            android:layout_marginStart="240dp"
+            android:layout_marginTop="120dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc7"
+            android:layout_width="120dp"
+            android:layout_height="60dp"
+            android:layout_marginStart="180dp"
+            android:layout_marginTop="0dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+        <ImageView
+            android:id="@+id/puzzle3_bloc8"
+            android:layout_width="60dp"
+            android:layout_height="120dp"
+            android:layout_marginStart="120dp"
+            android:layout_marginTop="60dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/bloc_regular" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 
     <View
         android:id="@+id/view_bottom"
@@ -417,7 +626,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard" />
+        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard1" />
 
     <Button
         android:id="@+id/btn_reset"
@@ -488,7 +697,7 @@
         app:layout_constraintEnd_toEndOf="@+id/view_bottom"
         app:layout_constraintHorizontal_bias="0.054"
         app:layout_constraintStart_toStartOf="@+id/view_bottom"
-        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard"
+        app:layout_constraintTop_toBottomOf="@+id/layout_middle_gameboard1"
         app:layout_constraintVertical_bias="0.557"
         app:strokeColor="#006F3B3B"
         tools:ignore="SpeakableTextPresentCheck" />
