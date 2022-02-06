@@ -149,8 +149,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
 
     public void victory(View view){
         this.onPuzzlePassed(view);
-        currentPuzzleNum = Math.min(currentPuzzleNum + 1, 2);
-        activatePuzzle(puzzleList[currentPuzzleNum].second, puzzleList[currentPuzzleNum].first);
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -299,6 +297,8 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
             }
             public void onFinish() {
                 popupWindow.dismiss();
+                currentPuzzleNum = Math.min(currentPuzzleNum + 1, 2);
+                activatePuzzle(puzzleList[currentPuzzleNum].second, puzzleList[currentPuzzleNum].first);
             }
 
         }.start();
