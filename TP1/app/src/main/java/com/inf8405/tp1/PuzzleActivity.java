@@ -4,17 +4,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.MotionEventCompat;
 import java.lang.String;
+import java.util.Arrays;
+import java.util.Stack;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
-    int gridArray[][] = new int[7][7];
+    int[][] stackedGrid;
+    int[][] gridArray = new int[7][7];
+    int moveCount = 0;
+    Stack<Object[]> stateStack = new Stack<>();
     ImageView _bloc1;
     ImageView _bloc2;
     ViewGroup _board;
@@ -27,7 +34,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_puzzle_page);
         hideToolBr();
-
         _board = (ViewGroup) findViewById(R.id.layout_middle_gameboard);
         _bloc1 = findViewById(R.id.bloc1);
         _bloc2 = findViewById((R.id.bloc2));
@@ -78,9 +84,10 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         }
     }
 
+
     public void checkGrid(){
-        for(int i = 0; i < 6; i++){
-            for(int j = 0; j < 6; j++){
+        for(int i = 0; i < 7; i++){
+            for(int j = 0; j < 7; j++){
                 System.out.print(gridArray[i][j] + ",");
             }
             System.out.println();
@@ -94,13 +101,13 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         int blocSize = lParams.height > lParams.width ? lParams.height / lParams.width : lParams.width / lParams.height;
         final int x = (int) event.getRawX();
         final int y = (int) event.getRawY();
-        System.out.println(event);
-
 
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // The player touches the view on screen
+                stackedGrid = Arrays.stream(gridArray).map(int[]::clone).toArray(int[][]::new);
+                stateStack.push(new Object[]{stackedGrid, view, new ConstraintLayout.LayoutParams(lParams)});
                 _dx = x - lParams.leftMargin;
                 _dy = y - lParams.topMargin;
                 updateBlocGrid(view, false);
@@ -162,6 +169,12 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 }
                 view.setLayoutParams(lParams);
                 updateBlocGrid(view, true);
+                if(Arrays.deepEquals(gridArray, stackedGrid)){
+                    stateStack.pop();
+                } else {
+                    moveCount++;
+                    System.out.println(moveCount);
+                }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 updateBlocGrid(view, true);
@@ -170,6 +183,23 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         }
         _board.invalidate();
         return true;
+    }
+
+    public void onButtonUndo(View view) {
+        if (stateStack.empty()) return;
+        Object[] undo = stateStack.pop();
+        gridArray = (int[][]) undo[0];
+        ImageView bloc = findViewById(((View) undo[1]).getId());
+        bloc.setLayoutParams((ConstraintLayout.LayoutParams) undo[2]);
+        moveCount--;
+        System.out.println(moveCount);
+    }
+
+    public void onButtonReset(View view) {
+        if(stateStack.empty()) return;
+        do{
+            onButtonUndo(view);
+        }while(!stateStack.empty());
     }
 
     public void onButtonPauseClick(View view) {
