@@ -243,7 +243,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
             default:
                 break;
         }
-        _board.invalidate();
         return true;
     }
 
