@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        hideToolBr();
+        hideToolBr(); // Hide TP1 name on top of app
     }
 
     @Override
@@ -31,16 +31,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Create a pop up window when about button is clicked
-    public void onButtonShowPopupWindowClick(View view) {
+    public void onAboutButtonClick(View view) {
         // inflate the layout of the popup window
-        LayoutInflater inflater = (LayoutInflater)
-                getSystemService(LAYOUT_INFLATER_SERVICE);
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.aboutwindow, null);
 
         // create the popup window
         int width = LinearLayout.LayoutParams.WRAP_CONTENT;
         int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        boolean focusable = true; // lets taps outside the popup also dismiss it
+        boolean focusable = true; // Allows tapping outside the window to disregard the pop up
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height, focusable);
 
         // show the popup window
@@ -56,14 +55,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // Hide the view of top tool bar with TP1 name on it
     public void hideToolBr() {
-
         int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
-
         uiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
         uiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
         uiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
@@ -73,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onButtonPlay(View view) {
         if (!isBufferedClick) {
-            startActivity(new Intent(MainActivity.this, PuzzleActivity.class));
+            startActivity(new Intent(MainActivity.this, PuzzleActivity.class)); // Start the puzzle activity page
             isBufferedClick = true;
         }
     }
