@@ -1,12 +1,9 @@
 package com.inf8405.tp1;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.media.Image;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -25,20 +22,14 @@ import java.util.Arrays;
 import java.util.Stack;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
-    int[][] stackedGrid;
     int[][] gridArray = new int[8][8];
+    int[][] previousGrid;
     int moveCount = 0;
     int currentPuzzleNum = 0;
     int gridElementSize;
     Stack<Object[]> stateStack = new Stack<>();
     TextView _moveCount;
     TextView _puzzleNumber;
-    ViewGroup _board1;
-    ViewGroup _board2;
-    ViewGroup _board3;
-    ImageView[] puzzle1;
-    ImageView[] puzzle2;
-    ImageView[] puzzle3;
     Pair<ViewGroup, ImageView[]>[] puzzleList = new Pair[3];
     private int _dx;
     private int _dy;
@@ -51,22 +42,19 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         hideToolBr();
         _moveCount = findViewById(R.id.txt_moves_num);
         _puzzleNumber = findViewById(R.id.txt_puzzle_num);
-        _board1 = findViewById(R.id.layout_middle_gameboard1);
-        _board2 = findViewById(R.id.layout_middle_gameboard2);
-        _board3 = findViewById(R.id.layout_middle_gameboard3);
-        puzzle1 = generatePuzzleImages(puzzle1, _board1);
-        puzzle2 = generatePuzzleImages(puzzle2, _board2);
-        puzzle3 = generatePuzzleImages(puzzle3, _board3);
-        puzzleList[0] = new Pair<>(_board1, puzzle1);
-        puzzleList[1] = new Pair<>(_board2, puzzle2);
-        puzzleList[2] = new Pair<>(_board3, puzzle3);
-        defineGridElementSize(puzzle1[0]);
+        ViewGroup board1 = findViewById(R.id.layout_middle_gameboard1);
+        ViewGroup board2 = findViewById(R.id.layout_middle_gameboard2);
+        ViewGroup board3 = findViewById(R.id.layout_middle_gameboard3);
+        puzzleList[0] = new Pair<>(board1, generatePuzzleImages(board1));
+        puzzleList[1] = new Pair<>(board2, generatePuzzleImages(board2));
+        puzzleList[2] = new Pair<>(board3, generatePuzzleImages(board3));
+        defineGridElementSize(puzzleList[0].second[0]);
         activatePuzzle(puzzleList[0].second, puzzleList[0].first);
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    public ImageView[] generatePuzzleImages(ImageView[] puzzle, ViewGroup board){
-        puzzle = new ImageView[board.getChildCount()];
+    public ImageView[] generatePuzzleImages(ViewGroup board){
+        ImageView[] puzzle = new ImageView[board.getChildCount()];
         for(int i = 0; i < board.getChildCount(); i++){
             System.out.println(board.getChildAt(i));
             puzzle[i] = (ImageView) board.getChildAt(i);
@@ -163,8 +151,8 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 // The player touches the view on screen
-                stackedGrid = Arrays.stream(gridArray).map(int[]::clone).toArray(int[][]::new);
-                stateStack.push(new Object[]{stackedGrid, view, new ConstraintLayout.LayoutParams(lParams)});
+                previousGrid = Arrays.stream(gridArray).map(int[]::clone).toArray(int[][]::new);
+                stateStack.push(new Object[]{previousGrid, view, new ConstraintLayout.LayoutParams(lParams)});
                 _dx = x - lParams.leftMargin;
                 _dy = y - lParams.topMargin;
                 updateBlocGrid(view, false);
@@ -226,7 +214,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 }
                 view.setLayoutParams(lParams);
                 updateBlocGrid(view, true);
-                if(Arrays.deepEquals(gridArray, stackedGrid)){
+                if(Arrays.deepEquals(gridArray, previousGrid)){
                     stateStack.pop();
                 } else {
                     moveCount++;
