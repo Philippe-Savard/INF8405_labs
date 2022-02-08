@@ -46,6 +46,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         puzzleList[2] = new Pair<>(board3, generatePuzzleImages(board3));
         defineGridElementSize(puzzleList[0].second[0]);
         activatePuzzle(puzzleList[0].second, puzzleList[0].first);
+        toggleButtons();
     }
 
 
@@ -70,6 +71,8 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     //   of the puzzle. Gets called when switching levels. //
     /////////////////////////////////////////////////////////
     public void activatePuzzle(ImageView[] puzzle, ViewGroup board) {
+        findViewById(R.id.btn_prev_puzzle).setVisibility(currentPuzzleNum == 0 ? View.INVISIBLE : View.VISIBLE);
+        findViewById(R.id.btn_next_puzzle).setVisibility(currentPuzzleNum == 2 ? View.INVISIBLE : View.VISIBLE);
         onButtonReset(board); // Clears the board of all blocks
         gridFill(); // Sets the initial state of the grid
         for (Pair<ViewGroup, ImageView[]> groupPuzzle : puzzleList) {
@@ -225,9 +228,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
                 if(gridArray[6][2] == 1){ // Checks if player has solved the puzzle
                     onPuzzlePassed(view); // Calls to open the victory pop up
                 }
-                break;
-            case MotionEvent.ACTION_CANCEL:
-                updateBlocGrid(view, true);
+                toggleButtons();
                 break;
             default:
                 break;
@@ -266,6 +267,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         bloc.setLayoutParams((ConstraintLayout.LayoutParams) undo[2]); // Resets blocs to previous location
         moveCount--;
         _moveCount.setText(Integer.toString(moveCount));  // Takes out 1 from the view count on the puzzle page
+        toggleButtons();
     }
 
     ///////////////////////////////////////////////
@@ -299,7 +301,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         MediaPlayer song = MediaPlayer.create(popupView.getContext(), R.raw.ring);
         song.start();
 
-        new CountDownTimer(3000, 1000) { // Create a time for 3 seconds for the pop up to automatically disapear
+        new CountDownTimer(3000, 1000) { // Create a time for 3 seconds for the pop up to automatically disappear
             public void onTick(long millisUntilFinished) {
                 // Do nothing
             }
@@ -310,6 +312,11 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
             }
 
         }.start();
+    }
+
+    public void toggleButtons(){
+        findViewById(R.id.btn_back).setBackgroundColor(stateStack.empty() ? 0xFF5D5C5C : 0xFFFF9800);
+        findViewById(R.id.btn_reset).setBackgroundColor(stateStack.empty() ? 0xFF5D5C5C : 0xFFFF1744);
     }
 
     public void onButtonPauseClick(View view) {

@@ -89,6 +89,7 @@
         android:layout_height="50dp"
         android:background="#00FFFFFF"
         android:onClick="onPreviousPuzzle"
+        android:visibility="invisible"
         app:cornerRadius="100sp"
         app:icon="@android:drawable/ic_media_rew"
         app:iconSize="50sp"
@@ -98,7 +99,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/view_puzzle_info"
         app:layout_constraintTop_toTopOf="@+id/txt_puzzle_title"
-        app:layout_constraintVertical_bias="0.55"
+        app:layout_constraintVertical_bias="0.544"
         tools:ignore="SpeakableTextPresentCheck" />
 
     <Button
@@ -108,6 +109,7 @@
         android:layout_marginStart="96dp"
         android:background="#00FFFFFF"
         android:onClick="onNextPuzzle"
+        android:visibility="visible"
         app:cornerRadius="100sp"
         app:icon="@android:drawable/ic_media_ff"
         app:iconSize="50sp"
@@ -632,7 +634,7 @@
         android:id="@+id/btn_reset"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FF1744"
+        android:backgroundTint="@color/red"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:letterSpacing="0"
@@ -656,7 +658,7 @@
         android:id="@+id/btn_back"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="#FF9800"
+        android:backgroundTint="@color/orange"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:letterSpacing="0"
@@ -680,8 +682,7 @@
         android:id="@+id/btn_pause"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:backgroundTint="#00AE59"
-        android:foregroundTint="#5D5C5C"
+        android:backgroundTint="@color/green"
         android:insetTop="0dp"
         android:insetBottom="0dp"
         android:letterSpacing="0"
@@ -701,6 +702,7 @@
         app:layout_constraintVertical_bias="0.557"
         app:strokeColor="#006F3B3B"
         tools:ignore="SpeakableTextPresentCheck" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
