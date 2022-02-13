@@ -46,6 +46,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     Stack<Object[]> stateStack = new Stack<>();
     TextView recordUpdate;
     TextView _minNumberOfMoves;
+    TextView _recordMoves;
     TextView _moveCount;
     TextView _puzzleNumber;
     Pair<ViewGroup, ImageView[]>[] puzzleList = new Pair[3];
@@ -67,6 +68,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         ViewGroup board1 = findViewById(R.id.layout_middle_gameboard1);
         ViewGroup board2 = findViewById(R.id.layout_middle_gameboard2);
         ViewGroup board3 = findViewById(R.id.layout_middle_gameboard3);
+        _recordMoves = findViewById(R.id.txt_record_num_last) ;
         puzzleList[0] = new Pair<>(board1, generatePuzzleImages(board1)); // Add pair containing the board and reference to the blocks/children of that board
         puzzleList[1] = new Pair<>(board2, generatePuzzleImages(board2));
         puzzleList[2] = new Pair<>(board3, generatePuzzleImages(board3));
@@ -83,33 +85,24 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     private void Save(TextView view) {
         if (currentPuzzleNum == 0){
             sharedPref = getSharedPreferences("MyPref1",MODE_PRIVATE);
-            if(moveCount < Integer.parseInt(_minNumberOfMoves.getText().toString())){
-                String bestScore1 = "" + moveCount;
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(nouveauMinimalMoves, bestScore1);
-                editor.apply();
-            }
         }
         else if(currentPuzzleNum == 1){
             sharedPref = getSharedPreferences("MyPref2",MODE_PRIVATE);
-            if(moveCount < Integer.parseInt(_minNumberOfMoves.getText().toString())){
-                String bestScore2 = "" + moveCount;
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(nouveauMinimalMoves, bestScore2);
-                editor.apply();
-            }
         }
         else {
             sharedPref = getSharedPreferences("MyPref3",MODE_PRIVATE);
-            String bestScore3 = "" + moveCount;
+        }
+        if( _recordMoves.getText().toString() == "--"){
+            String bestScore = "" + moveCount;
             SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString(nouveauMinimalMoves, bestScore3);
+            editor.putString(recordFinal, bestScore);
+            editor.apply();
+        } else if(moveCount < Integer.parseInt(_recordMoves.getText().toString())){
+            String bestScore = "" + moveCount;
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(recordFinal, bestScore);
             editor.apply();
         }
-        String bestScore = "" + moveCount;
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(recordFinal, bestScore);
-        editor.apply();
     }
 
     ////////////////////////////////////////////////////////
@@ -128,10 +121,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         else {
             sharedPref = getSharedPreferences("MyPref3",MODE_PRIVATE);
             ((TextView) findViewById(R.id.txt_record_num_last)).setText(sharedPref.getString(recordFinal, "--"));
-        }
-
-        if(sharedPref.contains(nouveauMinimalMoves)){
-            ((TextView) findViewById(R.id.txt_record_num_min)).setText(sharedPref.getString(nouveauMinimalMoves, "--"));
         }
     }
 
