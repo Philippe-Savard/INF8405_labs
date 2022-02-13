@@ -22,6 +22,10 @@
         <entry key="..\:/Poly/Session8/INF8405/Lab/INF8405_labs/TP1/app/src/main/res/layout/fragment_first.xml" value="0.36666666666666664" />
         <entry key="..\:/Poly/Session8/INF8405/Lab/INF8405_labs/TP1/app/src/main/res/layout/fragment_second.xml" value="0.36666666666666664" />
         <entry key="..\:/Poly/Session8/INF8405/Lab/INF8405_labs/TP1/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.3675" />
+        <entry key="app/src/main/res/font/faster_one.xml" value="0.22604166666666667" />
+        <entry key="app/src/main/res/layout/aboutwindow.xml" value="0.10326086956521739" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.10326086956521739" />
+        <entry key="app/src/main/res/layout/activity_puzzle_page.xml" value="0.22" />
       </map>
     </option>
   </component>

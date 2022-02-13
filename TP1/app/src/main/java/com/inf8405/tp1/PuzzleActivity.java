@@ -1,5 +1,7 @@
 package com.inf8405.tp1;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -13,23 +15,47 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Scanner;
 import java.util.Stack;
+import java.io.IOException;
 
 public class PuzzleActivity extends AppCompatActivity implements View.OnTouchListener{
     int[][] gridArray = new int[8][8]; // Grid that is used to keep track of block placement. Even if grid is 6x6 some padding is necessary (for the exit bloc)
     int[][] previousGrid;
     int moveCount = 0;
     int currentPuzzleNum = 0;
+    int [] tabMinimumNumberOfMoves = {15, 17, 15}; // Default values for minimum number of moves per puzzle
     int gridElementSize;
     Stack<Object[]> stateStack = new Stack<>();
+    TextView recordUpdate;
+    TextView _minNumberOfMoves;
     TextView _moveCount;
     TextView _puzzleNumber;
     Pair<ViewGroup, ImageView[]>[] puzzleList = new Pair[3];
     private int _dx;
     private int _dy;
+
+    public static final String recordFinal = "HighestScore";
+    public static final String nouveauMinimalMoves = "minMoves";
+    SharedPreferences sharedPref;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +73,69 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         defineGridElementSize(puzzleList[0].second[0]);
         activatePuzzle(puzzleList[0].second, puzzleList[0].first);
         toggleButtons();
+
+        sharedPref = getSharedPreferences("MyPref",MODE_PRIVATE);
+    }
+    ////////////////////////////////////////////////////////
+    //   Function that saves the current state of         //
+    //   the application and updates the last number of   //
+    //   moves and highest score                          //
+    ////////////////////////////////////////////////////////
+    private void Save(TextView view) {
+        if (currentPuzzleNum == 0){
+            sharedPref = getSharedPreferences("MyPref1",MODE_PRIVATE);
+            if(moveCount < Integer.parseInt(_minNumberOfMoves.getText().toString())){
+                String bestScore1 = "" + moveCount;
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(nouveauMinimalMoves, bestScore1);
+                editor.apply();
+            }
+        }
+        else if(currentPuzzleNum == 1){
+            sharedPref = getSharedPreferences("MyPref2",MODE_PRIVATE);
+            if(moveCount < Integer.parseInt(_minNumberOfMoves.getText().toString())){
+                String bestScore2 = "" + moveCount;
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(nouveauMinimalMoves, bestScore2);
+                editor.apply();
+            }
+        }
+        else {
+            sharedPref = getSharedPreferences("MyPref3",MODE_PRIVATE);
+            String bestScore3 = "" + moveCount;
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(nouveauMinimalMoves, bestScore3);
+            editor.apply();
+        }
+        String bestScore = "" + moveCount;
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(recordFinal, bestScore);
+        editor.apply();
     }
 
+    ////////////////////////////////////////////////////////
+    //   Function that loads the saved number of          //
+    //   moves and highest scores from the application    //
+    ////////////////////////////////////////////////////////
+    private void Get(TextView view) {
+        if (currentPuzzleNum == 0){
+            sharedPref = getSharedPreferences("MyPref1",MODE_PRIVATE);
+        }
+        else if(currentPuzzleNum == 1){
+            sharedPref = getSharedPreferences("MyPref2",MODE_PRIVATE);
+        }
+        else {
+            sharedPref = getSharedPreferences("MyPref3",MODE_PRIVATE);
+        }
+
+        if(sharedPref.contains(recordFinal)){
+            ((TextView) findViewById(R.id.txt_record_num_last)).setText(sharedPref.getString(recordFinal, "--"));
+        }
+
+        if(sharedPref.contains(nouveauMinimalMoves)){
+            ((TextView) findViewById(R.id.txt_record_num_min)).setText(sharedPref.getString(nouveauMinimalMoves, "--"));
+        }
+    }
 
     ////////////////////////////////////////////////////////
     //   Function that obtains the children (blocks)      //
@@ -75,6 +162,9 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         findViewById(R.id.btn_next_puzzle).setVisibility(currentPuzzleNum == 2 ? View.INVISIBLE : View.VISIBLE);
         onButtonReset(board); // Clears the board of all blocks
         gridFill(); // Sets the initial state of the grid
+
+        _minNumberOfMoves = findViewById(R.id.txt_record_num_min);
+
         for (Pair<ViewGroup, ImageView[]> groupPuzzle : puzzleList) {
             groupPuzzle.first.setVisibility(View.INVISIBLE); // Set all boards to invisible
         }
@@ -83,7 +173,19 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         for (ImageView bloc : puzzle) {
             updateBlocGrid(bloc, true);
         }
+
+        if (currentPuzzleNum == 0){
+            _minNumberOfMoves.setText(Integer.toString(tabMinimumNumberOfMoves[0]));
+        }
+        else if(currentPuzzleNum == 1){
+            _minNumberOfMoves.setText(Integer.toString(tabMinimumNumberOfMoves[1]));
+        }
+        else {
+            _minNumberOfMoves.setText(Integer.toString(tabMinimumNumberOfMoves[2]));
+        }
+        Get(recordUpdate);
     }
+
 
     // Hide the view of top tool bar with TP1 name on it
     public void hideToolBr() {
@@ -292,7 +394,7 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         int width = LinearLayout.LayoutParams.MATCH_PARENT;
         int height = LinearLayout.LayoutParams.MATCH_PARENT;
         final PopupWindow popupWindow = new PopupWindow(popupView, width, height);
-
+        Save(recordUpdate);
         // show the popup window
         popupWindow.setAnimationStyle(R.style.Animation); // Set the animation to fade out when the pop up is closed
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
@@ -322,4 +424,5 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     public void onButtonPauseClick(View view) {
         finish();
     }
+
 }
