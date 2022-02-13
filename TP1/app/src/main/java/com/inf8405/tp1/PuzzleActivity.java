@@ -73,7 +73,6 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         defineGridElementSize(puzzleList[0].second[0]);
         activatePuzzle(puzzleList[0].second, puzzleList[0].first);
         toggleButtons();
-
         sharedPref = getSharedPreferences("MyPref",MODE_PRIVATE);
     }
     ////////////////////////////////////////////////////////
@@ -120,15 +119,14 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
     private void Get(TextView view) {
         if (currentPuzzleNum == 0){
             sharedPref = getSharedPreferences("MyPref1",MODE_PRIVATE);
+            ((TextView) findViewById(R.id.txt_record_num_last)).setText(sharedPref.getString(recordFinal, "--"));
         }
         else if(currentPuzzleNum == 1){
             sharedPref = getSharedPreferences("MyPref2",MODE_PRIVATE);
+            ((TextView) findViewById(R.id.txt_record_num_last)).setText(sharedPref.getString(recordFinal, "--"));
         }
         else {
             sharedPref = getSharedPreferences("MyPref3",MODE_PRIVATE);
-        }
-
-        if(sharedPref.contains(recordFinal)){
             ((TextView) findViewById(R.id.txt_record_num_last)).setText(sharedPref.getString(recordFinal, "--"));
         }
 
@@ -183,7 +181,9 @@ public class PuzzleActivity extends AppCompatActivity implements View.OnTouchLis
         else {
             _minNumberOfMoves.setText(Integer.toString(tabMinimumNumberOfMoves[2]));
         }
+
         Get(recordUpdate);
+
     }
 
 
