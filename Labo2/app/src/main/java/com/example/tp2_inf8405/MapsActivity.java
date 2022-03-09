@@ -1,7 +1,6 @@
 package com.example.tp2_inf8405;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
@@ -19,12 +18,13 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.google.android.gms.location.LocationServices;
@@ -32,7 +32,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -40,7 +39,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MapsActivity extends AppCompatActivity
         implements OnMapReadyCallback {
@@ -83,8 +81,6 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
-
-        scanBluetooth();
     }
 
     /**
@@ -111,8 +107,7 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
 
                 layout = findViewById(R.id.bluetooth_list);
-
-
+                scanBluetooth();
             }
         }.start();
     }
@@ -137,28 +132,37 @@ public class MapsActivity extends AppCompatActivity
                 }
 
                 BluetoothClass deviceClass = device.getBluetoothClass();
-                if (device.getName() != null) {
-                    deviceClass.getDeviceClass();
-                    AddDevice(Integer.toString(deviceClass.getDeviceClass()));
-                    AddDevice(device.getName());
-                    AddDevice(device.getAddress());
-
+                int classNo = deviceClass.getDeviceClass();
+                if (classNo != 7936) {
+                    AddDevice(device.getName(), deviceClass.getDeviceClass(), device.getAddress(), device.getBondState(), device.hashCode(), device.getType());
                 }
             }
         }
     };
 
-
-    private void AddDevice(String device) {
+    private void AddDevice(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceHashCode, int deviceType) {
         TextView elementName = new TextView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         );
         elementName.setLayoutParams(params);
+        elementName.setClickable(true);
+        elementName.setOnClickListener(view -> {
+            // inflate the layout of the popup window
+            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+            View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
 
-        elementName.setText(device);
-        if (elementName == null) return;
+            // create the popup window
+            int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+            int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+            final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+            // show the popup window
+            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        });
+        String deviceInfo = deviceName + "\n" + deviceClass + "\n" + deviceAddress + "\n" + deviceBondState + "\n" + deviceType + "\n____________________________________________";
+        elementName.setText(deviceInfo);
         layout.addView(elementName);
     }
 
