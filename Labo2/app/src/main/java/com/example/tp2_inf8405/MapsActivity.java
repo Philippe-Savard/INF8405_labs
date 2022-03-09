@@ -2,14 +2,19 @@ package com.example.tp2_inf8405;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
+import android.view.View;
 
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,6 +23,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -38,6 +44,7 @@ public class MapsActivity extends AppCompatActivity
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean locationPermissionGranted;
+    static boolean isDayMode = true;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -84,7 +91,6 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
             }
         }.start();
-
     }
 
     /**
@@ -179,6 +185,29 @@ public class MapsActivity extends AppCompatActivity
                 getLocationPermission();
             }
         } catch (SecurityException e)  {
+        }
+        if(isDayMode){
+            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.day_theme));
+        } else {
+            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.night_theme));
+        }
+    }
+
+    @SuppressLint("ResourceType")
+    public void onChangeThemeButton(View view){
+        int nightModeFlags =
+                view.getContext().getResources().getConfiguration().uiMode &
+                        Configuration.UI_MODE_NIGHT_MASK;
+        switch (nightModeFlags) {
+            case Configuration.UI_MODE_NIGHT_YES:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                isDayMode = true;
+                break;
+
+            case Configuration.UI_MODE_NIGHT_NO:
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                isDayMode = false;
+                break;
         }
     }
 }
