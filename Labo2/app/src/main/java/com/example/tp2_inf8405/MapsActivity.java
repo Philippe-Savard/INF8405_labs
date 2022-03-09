@@ -34,6 +34,8 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -41,7 +43,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import java.util.ArrayList;
 
 public class MapsActivity extends AppCompatActivity
-        implements OnMapReadyCallback {
+        implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
 
     private GoogleMap map;
 
@@ -90,6 +92,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         this.map = map;
+        this.map.setOnMarkerClickListener(this);
 
         new CountDownTimer(1500, 1000) { // Create a time for 3 seconds for the pop up to automatically disappear
             public void onTick(long millisUntilFinished) {
@@ -105,7 +108,7 @@ public class MapsActivity extends AppCompatActivity
 
                 // Get the current location of the device and set the position of the map.
                 getDeviceLocation();
-
+                // Set a listener for marker click.
                 layout = findViewById(R.id.bluetooth_list);
                 scanBluetooth();
             }
@@ -135,10 +138,45 @@ public class MapsActivity extends AppCompatActivity
                 int classNo = deviceClass.getDeviceClass();
                 if (classNo != 7936) {
                     AddDevice(device.getName(), deviceClass.getDeviceClass(), device.getAddress(), device.getBondState(), device.hashCode(), device.getType());
+                    AddMarker(device.getName(), deviceClass.getDeviceClass(), device.getAddress(), device.getBondState(), device.hashCode(), device.getType());
                 }
             }
         }
     };
+
+    private void AddMarker(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceHashCode, int deviceType) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+
+        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+        locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    lastKnownLocation = task.getResult();
+                    if (lastKnownLocation != null) {
+                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        map.addMarker(new MarkerOptions()
+                                .position(deviceLocation)
+                                .title(deviceName));
+                    }
+                } else {
+                    map.moveCamera(CameraUpdateFactory
+                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                    map.getUiSettings().setMyLocationButtonEnabled(false);
+                }
+            }
+        });
+    }
 
     private void AddDevice(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceHashCode, int deviceType) {
         TextView elementName = new TextView(this);
@@ -148,19 +186,8 @@ public class MapsActivity extends AppCompatActivity
         );
         elementName.setLayoutParams(params);
         elementName.setClickable(true);
-        elementName.setOnClickListener(view -> {
-            // inflate the layout of the popup window
-            LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
-            View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
-
-            // create the popup window
-            int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-            int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-            final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
-
-            // show the popup window
-            popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
-        });
+        // inflate the layout of the popup window
+        elementName.setOnClickListener(this::bluetoothWindow);
         String deviceInfo = deviceName + "\n" + deviceClass + "\n" + deviceAddress + "\n" + deviceBondState + "\n" + deviceType + "\n____________________________________________";
         elementName.setText(deviceInfo);
         layout.addView(elementName);
@@ -181,6 +208,31 @@ public class MapsActivity extends AppCompatActivity
         }
 
         bluetoothAdapter.startDiscovery();
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+
+        // Retrieve the data from the marker.
+        this.bluetoothWindow(findViewById(R.id.map_view));
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur (which is for the camera to move such that the
+        // marker is centered and for the marker's info window to open, if it has one).
+        return false;
+    }
+
+    public void bluetoothWindow(View view) {
+        LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
+        View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
+
+        // create the popup window
+        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
+        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
+        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
+
+        // show the popup window
+        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
     }
 
 
