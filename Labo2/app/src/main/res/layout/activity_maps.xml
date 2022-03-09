@@ -30,6 +30,7 @@
             android:layout_weight="90">
 
             <LinearLayout
+                android:id="@+id/bluetooth_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"

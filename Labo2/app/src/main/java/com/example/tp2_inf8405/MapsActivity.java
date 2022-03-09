@@ -1,20 +1,31 @@
 package com.example.tp2_inf8405;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -28,6 +39,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MapsActivity extends AppCompatActivity
@@ -43,7 +55,11 @@ public class MapsActivity extends AppCompatActivity
     private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int PERMISSIONS_REQUEST_ENABLE_BLUETOOTH = 2;
     private boolean locationPermissionGranted;
+    private boolean bluetoothPermissionGranted;
+    private LinearLayout layout;
+    private ArrayList<TextView> bluetoothList;
     static boolean isDayMode = true;
 
     // The geographical location where the device is currently located. That is, the last-known
@@ -54,7 +70,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        bluetoothList = new ArrayList<>();
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
 
@@ -65,6 +81,10 @@ public class MapsActivity extends AppCompatActivity
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
+
+        scanBluetooth();
     }
 
     /**
@@ -89,9 +109,77 @@ public class MapsActivity extends AppCompatActivity
 
                 // Get the current location of the device and set the position of the map.
                 getDeviceLocation();
+
+                layout = findViewById(R.id.bluetooth_list);
+
+
             }
         }.start();
     }
+
+    // Create a BroadcastReceiver for ACTION_FOUND.
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                // Discovery has found a device. Get the BluetoothDevice
+                // object and its info from the Intent.
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+
+                BluetoothClass deviceClass = device.getBluetoothClass();
+                if (device.getName() != null) {
+                    deviceClass.getDeviceClass();
+                    AddDevice(Integer.toString(deviceClass.getDeviceClass()));
+                    AddDevice(device.getName());
+                    AddDevice(device.getAddress());
+
+                }
+            }
+        }
+    };
+
+
+    private void AddDevice(String device) {
+        TextView elementName = new TextView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        elementName.setLayoutParams(params);
+
+        elementName.setText(device);
+        if (elementName == null) return;
+        layout.addView(elementName);
+    }
+
+    private void scanBluetooth() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) return;
+
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                Manifest.permission.BLUETOOTH)
+                == PackageManager.PERMISSION_GRANTED) {
+            bluetoothPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.BLUETOOTH},
+                    PERMISSIONS_REQUEST_ENABLE_BLUETOOTH);
+        }
+
+        bluetoothAdapter.startDiscovery();
+    }
+
+
 
     /**
      * Gets the current location of the device, and positions the map's camera.
@@ -209,5 +297,11 @@ public class MapsActivity extends AppCompatActivity
                 isDayMode = false;
                 break;
         }
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Don't forget to unregister the ACTION_FOUND receiver.
+        unregisterReceiver(receiver);
     }
 }
