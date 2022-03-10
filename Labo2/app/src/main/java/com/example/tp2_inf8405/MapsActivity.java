@@ -20,11 +20,15 @@ import android.content.res.Configuration;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.LocationServices;
@@ -41,6 +45,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.zip.Inflater;
 
 public class MapsActivity extends AppCompatActivity
         implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
@@ -58,8 +64,10 @@ public class MapsActivity extends AppCompatActivity
     private static final int PERMISSIONS_REQUEST_ENABLE_BLUETOOTH = 2;
     private boolean locationPermissionGranted;
     private boolean bluetoothPermissionGranted;
-    private LinearLayout layout;
+    private LinearLayout bluetooth_layout;
+    private LinearLayout device_info_layout;
     private ArrayList<TextView> bluetoothList;
+    private HashMap<String, String[]> devices = new HashMap<String, String[]>();
     static boolean isDayMode = true;
 
     // The geographical location where the device is currently located. That is, the last-known
@@ -109,7 +117,7 @@ public class MapsActivity extends AppCompatActivity
                 // Get the current location of the device and set the position of the map.
                 getDeviceLocation();
                 // Set a listener for marker click.
-                layout = findViewById(R.id.bluetooth_list);
+                bluetooth_layout = findViewById(R.id.bluetooth_list);
                 scanBluetooth();
             }
         }.start();
@@ -165,9 +173,10 @@ public class MapsActivity extends AppCompatActivity
                     lastKnownLocation = task.getResult();
                     if (lastKnownLocation != null) {
                         LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                        map.addMarker(new MarkerOptions()
+                        Marker marker = map.addMarker(new MarkerOptions()
                                 .position(deviceLocation)
                                 .title(deviceName));
+                        marker.setTag(deviceAddress);
                     }
                 } else {
                     map.moveCamera(CameraUpdateFactory
@@ -187,10 +196,14 @@ public class MapsActivity extends AppCompatActivity
         elementName.setLayoutParams(params);
         elementName.setClickable(true);
         // inflate the layout of the popup window
-        elementName.setOnClickListener(this::bluetoothWindow);
-        String deviceInfo = deviceName + "\n" + deviceClass + "\n" + deviceAddress + "\n" + deviceBondState + "\n" + deviceType + "\n____________________________________________";
+        elementName.setOnClickListener(view -> this.bluetoothWindow(view, deviceAddress));
+
+        String[] info = {deviceName, String.valueOf(deviceClass), deviceAddress, String.valueOf(deviceBondState), String.valueOf(deviceType)};
+        devices.put(deviceAddress, info);
+        String deviceInfo = deviceName + "\n" + deviceAddress + "\n___________________________________";
+
         elementName.setText(deviceInfo);
-        layout.addView(elementName);
+        bluetooth_layout.addView(elementName);
     }
 
     private void scanBluetooth() {
@@ -212,9 +225,8 @@ public class MapsActivity extends AppCompatActivity
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-
         // Retrieve the data from the marker.
-        this.bluetoothWindow(findViewById(R.id.map_view));
+        this.bluetoothWindow(findViewById(R.id.map_view), (String) marker.getTag());
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
@@ -222,7 +234,7 @@ public class MapsActivity extends AppCompatActivity
         return false;
     }
 
-    public void bluetoothWindow(View view) {
+    public void bluetoothWindow(View view, String id) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
 
@@ -233,6 +245,9 @@ public class MapsActivity extends AppCompatActivity
 
         // show the popup window
         popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        device_info_layout = popupView.findViewById(R.id.bluetooth_device_info);
+
+        putDeviceInfo(id);
     }
 
 
@@ -354,6 +369,37 @@ public class MapsActivity extends AppCompatActivity
                 break;
         }
     }
+
+    public void onDirectionsButtonClick(View view){
+        Log.d("directions", Integer.toString(view.getId()));
+
+    }
+
+    public void onFavoritesButtonClick(View view){
+        Log.d("Favorites", "CLICKED FAVORITES");
+
+    }
+
+    public void onShareButtonClick(View view){
+        Log.d("Share", "CLICKED SHARE");
+    }
+
+    public void putDeviceInfo(String id){
+        TextView elementName = new TextView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        );
+        elementName.setLayoutParams(params);
+        String[] info = devices.get(id);
+        String deviceInfo = info[0] + "\n" + info[1] + "\n" + info[2] + "\n" + info[3] + "\n" + info[4];
+
+        elementName.setText(deviceInfo);
+        device_info_layout.addView(elementName);
+        device_info_layout.setTag(id);
+    }
+
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
