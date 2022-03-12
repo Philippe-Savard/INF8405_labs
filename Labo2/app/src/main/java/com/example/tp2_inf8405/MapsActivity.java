@@ -12,6 +12,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -172,10 +173,10 @@ public class MapsActivity extends AppCompatActivity
         editor.apply();
     }
 
-    private void SaveBluetoothDevice(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceType) {
+    private void SaveBluetoothDevice(String deviceName, String deviceClass, String deviceAddress, String deviceBondState, String deviceType) {
         sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
         if (!sharedPref.contains(deviceAddress)) {
-            String[] info = {deviceName, String.valueOf(deviceClass), deviceAddress, String.valueOf(deviceBondState), String.valueOf(deviceType), "false"};
+            String[] info = {deviceName, deviceClass, deviceAddress, deviceBondState, deviceType, "false"};
             devices.put(deviceAddress, info);
             AddDevice(deviceAddress);
         }
@@ -241,7 +242,7 @@ public class MapsActivity extends AppCompatActivity
                 BluetoothClass deviceClass = device.getBluetoothClass();
                 int classNo = deviceClass.getDeviceClass();
                 if (classNo != 7936) {
-                    SaveBluetoothDevice(device.getName(), classNo, device.getAddress(), device.getBondState(), device.getType());
+                    SaveBluetoothDevice(device.getName(), DeviceInfoConverter.ConvertDeviceClass(classNo), device.getAddress(), DeviceInfoConverter.ConvertBondState(device.getBondState()), DeviceInfoConverter.ConvertType(device.getType()));
                 }
             }
         }
@@ -268,7 +269,7 @@ public class MapsActivity extends AppCompatActivity
 
         elementName.setText(deviceInfo);
         bluetooth_layout.addView(elementName);
-    }
+}
 
     private void scanBluetooth() {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -461,7 +462,9 @@ public class MapsActivity extends AppCompatActivity
 
     public String PrettyPrint(String deviceAddress) {
         String[] info = devices.get(deviceAddress);
-        return info[0];
+        String returnString = "- Device Name: " + info[0] + "\n" + "- Device Class: " + info[1] + "\n"+ "- MAC address: " + info[2] + "\n" +
+                "- Bond state of the device: " + info[3] + "\n" + "- Type of bluetooth device: " + info[4] + "\n" + "- Favorites: " + info[5];
+        return returnString;
     }
 
     public void putDeviceInfo(String id){
@@ -473,13 +476,13 @@ public class MapsActivity extends AppCompatActivity
         elementName.setLayoutParams(params);
         String[] info = devices.get(id);
         assert info != null;
-        String deviceInfo = info[0] + "\n" + info[1] + "\n" + info[2] + "\n" + info[3] + "\n" + info[4] + "\n" + info[5];
+        String deviceInfo = PrettyPrint(id);
 
         elementName.setText(deviceInfo);
+        elementName.setTextColor(Color.CYAN);
         device_info_layout.addView(elementName);
         device_info_layout.setTag(id);
     }
-
 
     @Override
     protected void onDestroy() {
