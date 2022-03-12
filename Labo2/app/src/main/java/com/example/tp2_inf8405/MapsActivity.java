@@ -75,6 +75,7 @@ public class MapsActivity extends AppCompatActivity
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location lastKnownLocation;
+    private View view;
 
 
     @Override
@@ -315,7 +316,15 @@ public class MapsActivity extends AppCompatActivity
         putDeviceInfo(id);
     }
 
+    public void onShare(View view) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, "Hello world from TP2-INF8405 :)");
+        sendIntent.setType("text/plain");
 
+        Intent shareIntent = Intent.createChooser(sendIntent, null);
+        startActivity(shareIntent);
+    }
 
     /**
      * Gets the current location of the device, and positions the map's camera.
