@@ -19,6 +19,7 @@
         android:theme="@style/Theme.TP2_INF8405">
         <activity
             android:name=".SplashActivity"
+            android:screenOrientation="landscape"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,6 +44,7 @@
 
         <activity
             android:name=".MapsActivity"
+            android:screenOrientation="landscape"
             android:exported="true"
             android:label="@string/title_activity_maps">
             <intent-filter>

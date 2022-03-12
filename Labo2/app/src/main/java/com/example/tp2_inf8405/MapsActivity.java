@@ -82,6 +82,7 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
+        hideToolBr();
         sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
 
         // Construct a FusedLocationProviderClient.
@@ -93,6 +94,15 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
+    }
+
+    // Hide the view of top tool bar with TP1 name on it
+    public void hideToolBr() {
+        int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
+        uiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+        uiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
+        uiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        getWindow().getDecorView().setSystemUiVisibility(uiOptions);
     }
 
     /**
@@ -290,7 +300,7 @@ public class MapsActivity extends AppCompatActivity
     @Override
     public boolean onMarkerClick(final Marker marker) {
         // Retrieve the data from the marker.
-        this.bluetoothWindow(findViewById(R.id.map_view), (String) marker.getTag());
+        this.bluetoothWindow(findViewById(R.id.layout_map_view), (String) marker.getTag());
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
