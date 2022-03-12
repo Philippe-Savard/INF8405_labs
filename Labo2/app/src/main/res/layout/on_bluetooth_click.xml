@@ -15,21 +15,14 @@
         android:orientation="vertical"
         android:weightSum="100">
 
-        <ScrollView
-            android:id="@+id/scroll"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="80">
-
         <LinearLayout
             android:id="@+id/bluetooth_device_info"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="80"
+            android:layout_weight="60"
             android:orientation="vertical">
 
         </LinearLayout>
-        </ScrollView>
 
         <LinearLayout
             android:id="@+id/buttons"

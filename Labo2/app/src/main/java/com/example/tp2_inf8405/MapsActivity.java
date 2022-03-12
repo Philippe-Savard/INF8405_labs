@@ -1,11 +1,5 @@
 package com.example.tp2_inf8405;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
@@ -15,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -24,13 +19,17 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -42,11 +41,11 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.location.FusedLocationProviderClient;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.zip.Inflater;
+import java.util.Map;
+import java.util.Stack;
+
 
 public class MapsActivity extends AppCompatActivity
         implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
@@ -66,9 +65,12 @@ public class MapsActivity extends AppCompatActivity
     private boolean bluetoothPermissionGranted;
     private LinearLayout bluetooth_layout;
     private LinearLayout device_info_layout;
-    private ArrayList<TextView> bluetoothList;
     private HashMap<String, String[]> devices = new HashMap<String, String[]>();
+    private Stack<String> favorites = new Stack<String>();
+    private static Boolean isFavoriteView = false;
     static boolean isDayMode = true;
+    SharedPreferences sharedPref;
+
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
@@ -78,9 +80,9 @@ public class MapsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        bluetoothList = new ArrayList<>();
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
+        sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
 
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -118,9 +120,104 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
                 // Set a listener for marker click.
                 bluetooth_layout = findViewById(R.id.bluetooth_list);
-                scanBluetooth();
+                Thread newThread = new Thread(() -> scanBluetooth());
+                newThread.start();
+                FetchBluetoothDevices();
             }
         }.start();
+    }
+
+    private void FetchBluetoothDevices() {
+        Map<String, String> rawBluetoothDevices = (Map<String, String>) sharedPref.getAll();
+        for (Map.Entry<String, String> device : rawBluetoothDevices.entrySet()) {
+            devices.put(device.getKey(), device.getValue().split(","));
+            if (CheckFavorite(device.getKey()))
+                favorites.push(device.getKey());
+            AddDevice(device.getKey());
+            PlaceMarker(device.getKey(), new LatLng(Double.parseDouble(devices.get(device.getKey())[6]), Double.parseDouble(devices.get(device.getKey())[7])));
+        }
+    }
+
+    private Boolean CheckFavorite(String deviceAddress) {
+        String deviceInfo = sharedPref.getString(deviceAddress, null);
+        String[] infoArray = deviceInfo.split(",");
+        return Boolean.parseBoolean(infoArray[5]);
+    }
+
+    private void UpdateFavorites() {
+        bluetooth_layout.removeAllViews();
+        for (HashMap.Entry<String, String[]> device : devices.entrySet()) {
+            if (Boolean.parseBoolean(device.getValue()[5]) || !isFavoriteView)
+                AddDevice(device.getKey());
+        }
+    }
+
+
+    public void ToggleFavorites(View view) {
+        isFavoriteView = !isFavoriteView;
+        UpdateFavorites();
+    }
+
+    private void ChangeFavorite(String deviceAddress) {
+        String deviceInfo = sharedPref.getString(deviceAddress, null);
+        String[] infoArray = deviceInfo.split(",");
+        Boolean favorite = !CheckFavorite(deviceAddress);
+        if (favorite)
+            favorites.push(deviceAddress);
+        else
+            favorites.remove(deviceAddress);
+        devices.get(deviceAddress)[5] = String.valueOf(favorite);
+        String device = infoArray[0] + "," + infoArray[1] + "," + infoArray[2] + "," + infoArray[3] + "," + infoArray[4] + "," + favorite + "," + infoArray[6] + "," + infoArray[7];
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(deviceAddress, device);
+        editor.apply();
+    }
+
+    private void SaveBluetoothDevice(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceType) {
+        sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
+        if (!sharedPref.contains(deviceAddress)) {
+            String[] info = {deviceName, String.valueOf(deviceClass), deviceAddress, String.valueOf(deviceBondState), String.valueOf(deviceType), "false"};
+            devices.put(deviceAddress, info);
+            AddDevice(deviceAddress);
+        }
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+        locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
+            @Override
+            public void onComplete(@NonNull Task<Location> task) {
+                if (task.isSuccessful()) {
+                    // Set the map's camera position to the current location of the device.
+                    lastKnownLocation = task.getResult();
+                    if (lastKnownLocation != null) {
+                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                        PlaceMarker(deviceAddress, deviceLocation);
+                        String[] tempDevice = devices.get(deviceAddress);
+                        devices.put(deviceAddress, new String[]{tempDevice[0], tempDevice[1], tempDevice[2], tempDevice[3], tempDevice[4], tempDevice[5], String.valueOf(lastKnownLocation.getLatitude()), String.valueOf(lastKnownLocation.getLongitude())});
+                    }
+                } else {
+                    map.moveCamera(CameraUpdateFactory
+                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                    map.getUiSettings().setMyLocationButtonEnabled(false);
+                }
+
+                String[] moreInfo = devices.get(deviceAddress);
+                String device = moreInfo[0] + "," + moreInfo[1] + "," + moreInfo[2] + "," + moreInfo[3] + "," + moreInfo[4] + "," + moreInfo[5] + "," + moreInfo[6] + "," + moreInfo[7];
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString(deviceAddress, device);
+                editor.apply();
+            }
+        });
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
@@ -145,49 +242,20 @@ public class MapsActivity extends AppCompatActivity
                 BluetoothClass deviceClass = device.getBluetoothClass();
                 int classNo = deviceClass.getDeviceClass();
                 if (classNo != 7936) {
-                    AddDevice(device.getName(), deviceClass.getDeviceClass(), device.getAddress(), device.getBondState(), device.hashCode(), device.getType());
-                    AddMarker(device.getName(), deviceClass.getDeviceClass(), device.getAddress(), device.getBondState(), device.hashCode(), device.getType());
+                    SaveBluetoothDevice(device.getName(), classNo, device.getAddress(), device.getBondState(), device.getType());
                 }
             }
         }
     };
 
-    private void AddMarker(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceHashCode, int deviceType) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-
-        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-        locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()) {
-                    // Set the map's camera position to the current location of the device.
-                    lastKnownLocation = task.getResult();
-                    if (lastKnownLocation != null) {
-                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                        Marker marker = map.addMarker(new MarkerOptions()
-                                .position(deviceLocation)
-                                .title(deviceName));
-                        marker.setTag(deviceAddress);
-                    }
-                } else {
-                    map.moveCamera(CameraUpdateFactory
-                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                    map.getUiSettings().setMyLocationButtonEnabled(false);
-                }
-            }
-        });
+    private void PlaceMarker(String deviceAddress, LatLng location) {
+        Marker marker = map.addMarker(new MarkerOptions()
+                .position(location)
+                .title(devices.get(deviceAddress)[0]));
+        marker.setTag(deviceAddress);
     }
 
-    private void AddDevice(String deviceName, int deviceClass, String deviceAddress, int deviceBondState, int deviceHashCode, int deviceType) {
+    private void AddDevice(String deviceAddress) {
         TextView elementName = new TextView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -197,10 +265,7 @@ public class MapsActivity extends AppCompatActivity
         elementName.setClickable(true);
         // inflate the layout of the popup window
         elementName.setOnClickListener(view -> this.bluetoothWindow(view, deviceAddress));
-
-        String[] info = {deviceName, String.valueOf(deviceClass), deviceAddress, String.valueOf(deviceBondState), String.valueOf(deviceType)};
-        devices.put(deviceAddress, info);
-        String deviceInfo = deviceName + "\n" + deviceAddress + "\n___________________________________";
+        String deviceInfo = devices.get(deviceAddress)[0] + "\n" + deviceAddress + "\n___________________________________";
 
         elementName.setText(deviceInfo);
         bluetooth_layout.addView(elementName);
@@ -372,16 +437,25 @@ public class MapsActivity extends AppCompatActivity
 
     public void onDirectionsButtonClick(View view){
         Log.d("directions", Integer.toString(view.getId()));
-
     }
 
     public void onFavoritesButtonClick(View view){
-        Log.d("Favorites", "CLICKED FAVORITES");
-
+        Log.d("directions", Integer.toString(view.getId()));
+        String deviceAddress = (String) device_info_layout.getTag();
+        ChangeFavorite(deviceAddress);
+        device_info_layout.removeAllViews();
+        putDeviceInfo(deviceAddress);
+        UpdateFavorites();
     }
 
     public void onShareButtonClick(View view){
         Log.d("Share", "CLICKED SHARE");
+    }
+
+
+    public void PrettyPrint(String deviceAddress) {
+        String[] info = devices.get(deviceAddress);
+
     }
 
     public void putDeviceInfo(String id){
@@ -392,7 +466,8 @@ public class MapsActivity extends AppCompatActivity
         );
         elementName.setLayoutParams(params);
         String[] info = devices.get(id);
-        String deviceInfo = info[0] + "\n" + info[1] + "\n" + info[2] + "\n" + info[3] + "\n" + info[4];
+        assert info != null;
+        String deviceInfo = info[0] + "\n" + info[1] + "\n" + info[2] + "\n" + info[3] + "\n" + info[4] + "\n" + info[5];
 
         elementName.setText(deviceInfo);
         device_info_layout.addView(elementName);
