@@ -75,7 +75,6 @@ public class MapsActivity extends AppCompatActivity
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
     private Location lastKnownLocation;
-    private View view;
 
 
     @Override
@@ -152,7 +151,6 @@ public class MapsActivity extends AppCompatActivity
                 AddDevice(device.getKey());
         }
     }
-
 
     public void ToggleFavorites(View view) {
         isFavoriteView = !isFavoriteView;
@@ -316,15 +314,7 @@ public class MapsActivity extends AppCompatActivity
         putDeviceInfo(id);
     }
 
-    public void onShare(View view) {
-        Intent sendIntent = new Intent();
-        sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, "Hello world from TP2-INF8405 :)");
-        sendIntent.setType("text/plain");
 
-        Intent shareIntent = Intent.createChooser(sendIntent, null);
-        startActivity(shareIntent);
-    }
 
     /**
      * Gets the current location of the device, and positions the map's camera.
@@ -457,14 +447,21 @@ public class MapsActivity extends AppCompatActivity
         UpdateFavorites();
     }
 
-    public void onShareButtonClick(View view){
-        Log.d("Share", "CLICKED SHARE");
+    public void onShareButtonClick(View view) {
+
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, PrettyPrint((String) device_info_layout.getTag()));
+        sendIntent.setType("text/plain");
+
+        Intent shareIntent = Intent.createChooser(sendIntent, null);
+        startActivity(shareIntent);
     }
 
 
-    public void PrettyPrint(String deviceAddress) {
+    public String PrettyPrint(String deviceAddress) {
         String[] info = devices.get(deviceAddress);
-
+        return info[0];
     }
 
     public void putDeviceInfo(String id){
