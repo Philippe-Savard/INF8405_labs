@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -435,8 +437,34 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    private void DisplayTrack(LatLng start, String endLatitude, String endLongitude){
+        // If the device does not have a map installed redirect to to google maps
+        String startLatitude = String.valueOf(start.latitude);
+        String startLongitude = String.valueOf(start.longitude);
+        try {
+            // when google maps is installed initialise uri
+            Uri uri = Uri.parse("https://www.google.co.in/maps/dir/" + startLatitude + "," + startLongitude + "/" + endLatitude + "," + endLongitude);
+            //Initialise intent with action view
+            Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+            //Set package
+            intent.setPackage("com.google.android.apps.maps");
+            //Set flag
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //start activity
+            startActivity(intent);
+        }catch (ActivityNotFoundException e){
+            // when google maps is not installed
+            Uri uri = Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.maps%22");
+            Intent intent = new Intent(Intent.ACTION_VIEW,uri);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
+
+    }
+
     public void onDirectionsButtonClick(View view){
-        Log.d("directions", Integer.toString(view.getId()));
+        String deviceAddress = (String) device_info_layout.getTag();
+        DisplayTrack(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), devices.get(deviceAddress)[6], devices.get(deviceAddress)[7]);
     }
 
     public void onFavoritesButtonClick(View view){
