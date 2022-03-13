@@ -359,7 +359,8 @@ public class MapsActivity extends AppCompatActivity
                     }
                 });
             }
-        } catch (SecurityException e)  {
+        } catch (SecurityException e) {
+            e.printStackTrace();
         }
     }
 
@@ -500,9 +501,8 @@ public class MapsActivity extends AppCompatActivity
 
     public String PrettyPrint(String deviceAddress) {
         String[] info = devices.get(deviceAddress);
-        String returnString = "- Device Name: " + info[0] + "\n" + "- Device Class: " + info[1] + "\n"+ "- MAC address: " + info[2] + "\n" +
+        return "- Device Name: " + info[0] + "\n" + "- Device Class: " + info[1] + "\n"+ "- MAC address: " + info[2] + "\n" +
                 "- Bond state of the device: " + info[3] + "\n" + "- Type of bluetooth device: " + info[4] + "\n" + "- Favorites: " + info[5];
-        return returnString;
     }
 
     public void putDeviceInfo(String id){
