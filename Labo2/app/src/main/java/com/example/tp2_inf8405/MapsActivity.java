@@ -45,6 +45,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -69,10 +70,13 @@ public class MapsActivity extends AppCompatActivity
     private LinearLayout bluetooth_layout;
     private LinearLayout device_info_layout;
     private HashMap<String, String[]> devices = new HashMap<String, String[]>();
+    private ArrayList<Marker> markers = new ArrayList<>();
     private Stack<String> favorites = new Stack<String>();
     private static Boolean isFavoriteView = false;
+    private static Boolean threadStarted = false;
     static boolean isDayMode = true;
     SharedPreferences sharedPref;
+    Thread newThread;
 
 
     // The geographical location where the device is currently located. That is, the last-known
@@ -97,6 +101,13 @@ public class MapsActivity extends AppCompatActivity
         mapFragment.getMapAsync(this);
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
+        newThread = new Thread(() -> {
+            try {
+                scanBluetooth();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // Hide the view of top tool bar with TP1 name on it
@@ -133,8 +144,10 @@ public class MapsActivity extends AppCompatActivity
                 getDeviceLocation();
                 // Set a listener for marker click.
                 bluetooth_layout = findViewById(R.id.bluetooth_list);
-                Thread newThread = new Thread(() -> scanBluetooth());
-                newThread.start();
+                if (!threadStarted) {
+                    newThread.start();
+                    threadStarted = true;
+                }
                 FetchBluetoothDevices();
             }
         }.start();
@@ -191,6 +204,9 @@ public class MapsActivity extends AppCompatActivity
             String[] info = {deviceName, deviceClass, deviceAddress, deviceBondState, deviceType, "false"};
             devices.put(deviceAddress, info);
             AddDevice(deviceAddress);
+        }
+        else {
+            ChangeMarker(deviceAddress);
         }
 
 
@@ -265,6 +281,17 @@ public class MapsActivity extends AppCompatActivity
                 .position(location)
                 .title(devices.get(deviceAddress)[0]));
         marker.setTag(deviceAddress);
+        markers.add(marker);
+    }
+
+    private void ChangeMarker(String deviceAddress) {
+        for (Marker marker: markers) {
+            if (marker.getTag().equals(deviceAddress)) {
+                marker.remove();
+                markers.remove(marker);
+                return;
+            }
+        }
     }
 
     private void AddDevice(String deviceAddress) {
@@ -283,7 +310,7 @@ public class MapsActivity extends AppCompatActivity
         bluetooth_layout.addView(elementName);
 }
 
-    private void scanBluetooth() {
+    private void scanBluetooth() throws InterruptedException {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) return;
 
@@ -296,8 +323,15 @@ public class MapsActivity extends AppCompatActivity
                     new String[]{Manifest.permission.BLUETOOTH},
                     PERMISSIONS_REQUEST_ENABLE_BLUETOOTH);
         }
-
-        bluetoothAdapter.startDiscovery();
+        while(true) {
+            bluetoothAdapter.startDiscovery();
+            try {
+                Thread.sleep(1000);
+            }
+            catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+        }
     }
 
     @Override
@@ -479,7 +513,6 @@ public class MapsActivity extends AppCompatActivity
     }
 
     public void onFavoritesButtonClick(View view){
-        Log.d("directions", Integer.toString(view.getId()));
         String deviceAddress = (String) device_info_layout.getTag();
         ChangeFavorite(deviceAddress);
         device_info_layout.removeAllViews();
