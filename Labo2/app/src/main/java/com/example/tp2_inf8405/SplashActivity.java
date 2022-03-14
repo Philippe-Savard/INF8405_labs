@@ -18,7 +18,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void waitForTimer(){
-        new CountDownTimer(3000, 1000) { // Create a time for 3 seconds for the pop up to automatically disappear
+        new CountDownTimer(3000, 1000) { // Create a timer for 3 seconds for the pop up to automatically disappear
             public void onTick(long millisUntilFinished) {
                 // Do nothing
             }
@@ -28,7 +28,7 @@ public class SplashActivity extends AppCompatActivity {
             }
         }.start();
     }
-    // Hide the view of top tool bar with TP1 name on it
+    // Hide the view of top tool bar with TP2 name on it
     public void hideToolBr() {
         int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
         uiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
