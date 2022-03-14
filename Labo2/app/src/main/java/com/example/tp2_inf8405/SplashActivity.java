@@ -18,7 +18,7 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public void waitForTimer(){
-        new CountDownTimer(1000, 1000) { // Create a time for 3 seconds for the pop up to automatically disappear
+        new CountDownTimer(3000, 1000) { // Create a time for 3 seconds for the pop up to automatically disappear
             public void onTick(long millisUntilFinished) {
                 // Do nothing
             }

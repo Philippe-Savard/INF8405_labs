@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -143,12 +144,12 @@ public class MapsActivity extends AppCompatActivity
                 // Get the current location of the device and set the position of the map.
                 getDeviceLocation();
                 // Set a listener for marker click.
+                FetchBluetoothDevices();
                 bluetooth_layout = findViewById(R.id.bluetooth_list);
                 if (!threadStarted) {
                     newThread.start();
                     threadStarted = true;
                 }
-                FetchBluetoothDevices();
             }
         }.start();
     }
@@ -201,9 +202,11 @@ public class MapsActivity extends AppCompatActivity
     private void SaveBluetoothDevice(String deviceName, String deviceClass, String deviceAddress, String deviceBondState, String deviceType) {
         sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
         if (!sharedPref.contains(deviceAddress)) {
-            String[] info = {deviceName, deviceClass, deviceAddress, deviceBondState, deviceType, "false"};
-            devices.put(deviceAddress, info);
-            AddDevice(deviceAddress);
+            if ( !devices.containsKey(deviceAddress)){
+                String[] info = {deviceName, deviceClass, deviceAddress, deviceBondState, deviceType, "false"};
+                devices.put(deviceAddress, info);
+                AddDevice(deviceAddress);
+            }
         }
         else {
             ChangeMarker(deviceAddress);
@@ -325,12 +328,7 @@ public class MapsActivity extends AppCompatActivity
         }
         while(true) {
             bluetoothAdapter.startDiscovery();
-            try {
-                Thread.sleep(1000);
-            }
-            catch(InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
+            TimeUnit.SECONDS.sleep(15);
         }
     }
 
