@@ -246,8 +246,8 @@ public class MapsActivity extends AppCompatActivity
     ////////////////////////////////////////////
 
     // Function that checks if the device stored is tagged as favorite or not and returns bool value
-    private Boolean checkFavorite(String deviceAddress) {
-        String deviceInfo = sharedPref.getString(deviceAddress, null);
+    private Boolean checkFavorite(String deviceMACAddress) {
+        String deviceInfo = sharedPref.getString(deviceMACAddress, null);
         String[] infoArray = deviceInfo.split(",");
         return Boolean.parseBoolean(infoArray[5]);
     }
@@ -476,16 +476,16 @@ public class MapsActivity extends AppCompatActivity
     }
 
     public void onDirectionsButtonClick(View view){
-        String deviceAddress = (String) device_info_layout.getTag();
+        String deviceMACAddress = (String) device_info_layout.getTag();
         // Create directions using current location as start and device position as destination
-        openGoogleMapsDirections(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), devices.get(deviceAddress)[6], devices.get(deviceAddress)[7]);
+        openGoogleMapsDirections(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), devices.get(deviceMACAddress)[6], devices.get(deviceMACAddress)[7]);
     }
 
     public void onFavoritesButtonClick(View view){
-        String deviceAddress = (String) device_info_layout.getTag();
-        modifyDeviceFavoriteStatus(deviceAddress);
+        String deviceMACAddress = (String) device_info_layout.getTag();
+        modifyDeviceFavoriteStatus(deviceMACAddress);
         device_info_layout.removeAllViews();
-        displayDeviceInfo(deviceAddress);
+        displayDeviceInfo(deviceMACAddress);
         updateSideViewDevices();
     }
 
@@ -527,8 +527,8 @@ public class MapsActivity extends AppCompatActivity
     /////////////////////////////////////
 
     // Function that displays the device information in a uniform way
-    public String prettyPrint(String deviceAddress) {
-        String[] info = devices.get(deviceAddress);
+    public String prettyPrint(String deviceMACAddress) {
+        String[] info = devices.get(deviceMACAddress);
         return "- Device Name: " + info[0] + "\n" + "- Device Class: " + info[1] + "\n"+ "- MAC address: " + info[2] + "\n" +
                 "- Bond state of the device: " + info[3] + "\n" + "- Type of bluetooth device: " + info[4] + "\n" + "- Favorites: " + info[5];
     }
