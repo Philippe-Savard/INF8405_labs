@@ -1,72 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_map_view"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
     android:weightSum="100">
 
-    <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="80"
+        android:layout_height="0dp"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@id/div_map_list"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent"
         tools:context=".MapsActivity" />
 
 
-    <LinearLayout
-        android:layout_width="0dp"
+    <View
+        android:id="@+id/div_map_list"
+        android:layout_width="1dp"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_weight="20"
-        android:weightSum="100">
+        android:background="?android:attr/listDivider"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@+id/layout_bluetooth"
+        map:layout_constraintStart_toEndOf="@+id/map"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_bluetooth"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toEndOf="@id/div_map_list"
+        map:layout_constraintTop_toTopOf="parent"
+        map:layout_constraintVertical_bias="1.0">
+
+        <TextView
+            android:id="@+id/txt_devicetitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Device list"
+            android:textAlignment="center"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toTopOf="parent" />
 
         <ScrollView
-            android:id="@+id/scroll"
-            android:layout_width="match_parent"
+            android:id="@+id/scrollview_bluetooth"
+            android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_weight="90">
+            android:layout_marginStart="5dp"
+            map:layout_constraintBottom_toTopOf="@+id/div_bluetooth"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toBottomOf="@+id/txt_devicetitle">
 
             <LinearLayout
+                android:id="@+id/bluetooth_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:weightSum="100">
+                android:weightSum="100"
+                android:divider="?android:attr/listDivider"
+                android:showDividers="middle">
 
+                <View
+                    android:id="@+id/div_blue_element"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="?android:attr/listDivider" />
             </LinearLayout>
 
         </ScrollView>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="10"
-            android:orientation="horizontal"
-            android:weightSum="100">
+        <View
+            android:id="@+id/div_bluetooth"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
+            map:layout_constraintBottom_toTopOf="@+id/btn_fav"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent" />
 
-            <Button
-                android:id="@+id/change_theme"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="49"
-                android:onClick="onChangeThemeButton"
-                android:text="Swap Theme" />
+        <ToggleButton
+            android:id="@+id/btn_fav"
+            android:layout_width="152dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="49"
+            android:backgroundTint="#6200ee"
+            android:onClick="toggleFavorites"
 
-            <Button
-                android:id="@+id/favorites"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="49"
-                android:text="Favorites" />
+            android:text="Favorites"
+            android:textColor="#FFFFFF"
+            android:textOff="Favorites"
+            android:textOn="List all"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toEndOf="@+id/btn_theme" />
 
-        </LinearLayout>
+        <Button
+            android:id="@+id/btn_theme"
+            android:layout_width="145dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:layout_weight="49"
+            android:onClick="onChangeThemeButton"
+            android:text="Swap Theme"
+            map:cornerRadius="2dp"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toStartOf="@+id/btn_fav"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toBottomOf="@+id/div_bluetooth"
+            map:layout_constraintVertical_bias="0.0" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-
-    </LinearLayout>
-
-
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
