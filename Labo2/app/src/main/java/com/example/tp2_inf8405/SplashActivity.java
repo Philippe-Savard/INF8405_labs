@@ -22,6 +22,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -42,8 +43,6 @@ public class SplashActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView imageView;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    FirebaseStorage storage;
-    StorageReference storageReference;
     Bitmap user_photo;
 
     @Override
@@ -141,48 +140,25 @@ public class SplashActivity extends AppCompatActivity {
         user.put("password", password);
         user.put("name", name);
         // Add a new document with a generated ID
-        db.collection("users").add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("tag", "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w("tag", "Error adding document", e);
-                    }
-                });
+        db.collection("users").document(email).set(user);
     }
 
     public void verifyUser(String email, String password){
-        final boolean[] user_validated = {false};
-        db.collection("users")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d("TAG", document.getId() + " => " + document.getData().get("email"));
-                                if (email.equals(document.getData().get("email").toString())){
-                                    if (password.equals(document.getData().get("password").toString())){
-                                        Intent intent = new Intent(getBaseContext(), MapsActivity.class);
-                                        intent.putExtra("user_email", email);
-                                        startActivity(intent);
-                                        user_validated[0] = true;
-                                    }
-                                }
-                            }
-                            if (!user_validated[0]){
-                                findViewById(R.id.incorrect_login).setVisibility(View.VISIBLE);
-                            }
-                        } else {
-                            Log.w("TAG", "Error getting documents.", task.getException());
-                        }
-                    }
-                });
+        Task<DocumentSnapshot> document = db.collection("users").document(email).get();
+        document.addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                if (password.equals(task.getResult().getData().get("password").toString())){
+                    Intent intent = new Intent(getBaseContext(), MapsActivity.class);
+                    intent.putExtra("user_email", email);
+                    startActivity(intent);
+                } else {
+                    findViewById(R.id.incorrect_login).setVisibility(View.VISIBLE);
+                }
+            } else {
+                Log.w("TAG", "Error getting documents.", task.getException());
+            }
+        });
+
     }
 
     public boolean verify_params(boolean isSignUp, EditText email, EditText password){
