@@ -16,6 +16,7 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,6 +82,7 @@ public class MapsActivity extends AppCompatActivity
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
+    private static String user_email = "";
 
 
     @Override
@@ -89,6 +91,7 @@ public class MapsActivity extends AppCompatActivity
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
         hideToolBar();
+        user_email = getIntent().getStringExtra("user_email");
         sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
 
         // Construct a FusedLocationProviderClient.
