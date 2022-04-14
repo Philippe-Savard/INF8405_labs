@@ -13,9 +13,12 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.TrafficStats;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,11 +84,31 @@ public class MapsActivity extends AppCompatActivity
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
+    private static long initDownload = 0;
+    private static long initUpload = 0;
+    private Intent batteryStatus = new Intent();
+    private static long initEnergy = 0;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        batteryStatus = registerReceiver(null, ifilter);
+        BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+        int diffTest = batteryManager.getIntProperty(BatteryManager.BATTERY_HEALTH_DEAD);
+        Log.d("gggggggg", String.valueOf(diffTest));
+        int test = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
+        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        initEnergy = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
+        Log.d("test", String.valueOf(test));
+        Log.d("scale", String.valueOf(scale));
+        Log.d("inittest", String.valueOf(initEnergy));
+        initDownload = TrafficStats.getTotalRxBytes();
+        initUpload = TrafficStats.getTotalTxBytes();
+
+
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
         hideToolBar();
@@ -236,6 +259,10 @@ public class MapsActivity extends AppCompatActivity
         }
         while(true) {
             // Task done in perpetuity by dedicated thread
+            long currentDownload = TrafficStats.getTotalRxBytes() - initDownload;
+            long currentUpload = TrafficStats.getTotalTxBytes() - initUpload;
+            Log.d("joebs", String.valueOf(currentDownload));
+            Log.d("joeb", String.valueOf(currentUpload));
             bluetoothAdapter.startDiscovery();
             TimeUnit.SECONDS.sleep(15); // Discovery takes 12 seconds so we wait a little extra to ensure no discovery overlap
         }
