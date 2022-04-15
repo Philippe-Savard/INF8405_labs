@@ -8,7 +8,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -26,7 +25,6 @@ import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,13 +42,11 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -86,8 +82,8 @@ public class MapsActivity extends AppCompatActivity
     /////////////////////////////////////
     static boolean isDayMode = true;
     private ArrayList<Marker> markers = new ArrayList<>();
-    private Stack<String> favorites = new Stack<String>();
-    private HashMap<String, String[]> devices = new HashMap<String, String[]>();
+    private Stack<String> favorites = new Stack<>();
+    private HashMap<String, String[]> devices = new HashMap<>();
     Thread newThread;
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
@@ -107,14 +103,9 @@ public class MapsActivity extends AppCompatActivity
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         batteryStatus = registerReceiver(null, ifilter);
         BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
-        int diffTest = batteryManager.getIntProperty(BatteryManager.BATTERY_HEALTH_DEAD);
-        Log.d("gggggggg", String.valueOf(diffTest));
-        int test = batteryStatus.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, -1);
-        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        initEnergy = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
-        Log.d("test", String.valueOf(test));
-        Log.d("scale", String.valueOf(scale));
-        Log.d("inittest", String.valueOf(initEnergy));
+        
+        long johnn = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
+        Log.d("gggg", String.valueOf(johnn));
         initDownload = TrafficStats.getTotalRxBytes();
         initUpload = TrafficStats.getTotalTxBytes();
 
@@ -200,7 +191,7 @@ public class MapsActivity extends AppCompatActivity
                             devices.put(device.getId(), deviceInfo); // Add it to runtime reference of all devices
                             if (checkFavorite(device.getId()))
                                 favorites.push(device.getId()); // Adds it to favorites if saved as favorites
-                            // Add device to the view. Maps and side pannel
+                            // Add device to the view. Maps and side panel
                             addDeviceToSideView(device.getId());
                             addMarker(device.getId(), new LatLng(Double.parseDouble(devices.get(device.getId())[6]), Double.parseDouble(devices.get(device.getId())[7])));
                         }
@@ -294,6 +285,9 @@ public class MapsActivity extends AppCompatActivity
             // Task done in perpetuity by dedicated thread
             long currentDownload = TrafficStats.getTotalRxBytes() - initDownload;
             long currentUpload = TrafficStats.getTotalTxBytes() - initUpload;
+            int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+            int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+            Log.d("battery", String.valueOf(level/scale));
             Log.d("joebs", String.valueOf(currentDownload));
             Log.d("joeb", String.valueOf(currentUpload));
             bluetoothAdapter.startDiscovery();
