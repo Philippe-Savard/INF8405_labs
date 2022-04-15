@@ -4,41 +4,201 @@
     xmlns:map="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layout_map_view"
+    android:theme="@style/Theme.TP2_INF8405"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:weightSum="100">
+
+
+    <ImageView
+        android:id="@+id/img_battery_std"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent"
+        map:srcCompat="@drawable/ic_baseline_bolt_24" />
+
+    <TextView
+        android:id="@+id/txt_battery_value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="0"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/img_battery_std"
+        map:layout_constraintTop_toTopOf="parent"
+        tools:text="0" />
+
+    <TextView
+        android:id="@+id/txt_pourcentage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintStart_toEndOf="@id/txt_battery_value"
+        map:layout_constraintTop_toTopOf="parent"
+        tools:text="mA" />
+
+    <ImageView
+        android:id="@+id/img_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/txt_pourcentage"
+        map:layout_constraintTop_toTopOf="parent"
+        map:srcCompat="@drawable/ic_baseline_arrow_upward_24" />
+
+    <TextView
+        android:id="@+id/txt_upload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="0"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/img_upload"
+        map:layout_constraintTop_toTopOf="parent"
+        tools:text="0" />
+
+    <TextView
+        android:id="@+id/txt_upload_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="kB"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/txt_upload"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintStart_toEndOf="@id/txt_upload_unit"
+        map:layout_constraintTop_toTopOf="parent"
+        map:srcCompat="@drawable/ic_baseline_arrow_downward_24" />
+
+    <TextView
+        android:id="@+id/txt_download"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="0"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/img_download"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_download_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="kB"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintStart_toEndOf="@+id/txt_download"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_sunlight"
+        android:layout_width="24dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintEnd_toStartOf="@+id/txt_lux"
+        map:layout_constraintTop_toTopOf="parent"
+        map:srcCompat="@drawable/ic_baseline_wb_sunny_24" />
+
+    <TextView
+        android:id="@+id/txt_lux"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:text="0"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintEnd_toStartOf="@id/txt_lux_unit"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_lux_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:text="lx"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintEnd_toStartOf="@id/img_battery"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/img_battery"
+        android:layout_width="24dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        map:layout_constraintBottom_toTopOf="@id/div_topbar"
+        map:layout_constraintEnd_toStartOf="@+id/txt_battery_val"
+        map:layout_constraintTop_toTopOf="parent"
+        map:srcCompat="@drawable/ic_baseline_battery_std_24" />
+
+    <TextView
+        android:id="@+id/txt_battery_val"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:text="0"
+        android:textAlignment="viewStart"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintEnd_toStartOf="@id/txt_battery_unit"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_battery_unit"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="32dp"
+        android:text="%"
+        map:layout_constraintBottom_toTopOf="@+id/div_topbar"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/div_topbar"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toBottomOf="@id/img_upload" />
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/map"
         android:name="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        map:layout_constraintBottom_toBottomOf="parent"
-        map:layout_constraintEnd_toStartOf="@id/div_map_list"
-        map:layout_constraintStart_toStartOf="parent"
-        map:layout_constraintTop_toTopOf="parent"
+        android:background="@drawable/rounded_corners"
+        map:layout_constraintBottom_toTopOf="@+id/space_bottom_map"
+        map:layout_constraintEnd_toStartOf="@id/space_right_map"
+        map:layout_constraintStart_toStartOf="@id/space_left_map"
+        map:layout_constraintTop_toBottomOf="@+id/space_top_map"
+        map:layout_constraintVertical_bias="0.0"
+        map:layout_constraintWidth_percent="0.65"
         tools:context=".MapsActivity" />
-
 
     <View
         android:id="@+id/div_map_list"
         android:layout_width="1dp"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:background="?android:attr/listDivider"
         map:layout_constraintBottom_toBottomOf="parent"
         map:layout_constraintEnd_toStartOf="@+id/layout_bluetooth"
-        map:layout_constraintStart_toEndOf="@+id/map"
-        map:layout_constraintTop_toTopOf="parent" />
+        map:layout_constraintStart_toEndOf="@id/space_right_map"
+        map:layout_constraintTop_toTopOf="@id/div_topbar" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/layout_bluetooth"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintBottom_toTopOf="@id/div_nav"
         map:layout_constraintEnd_toEndOf="parent"
         map:layout_constraintStart_toEndOf="@id/div_map_list"
-        map:layout_constraintTop_toTopOf="parent"
-        map:layout_constraintVertical_bias="1.0">
+        map:layout_constraintTop_toTopOf="@id/div_topbar">
 
         <TextView
             android:id="@+id/txt_devicetitle"
@@ -48,28 +208,40 @@
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold"
+            map:layout_constraintBottom_toTopOf="@+id/scrollview_bluetooth"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintStart_toStartOf="parent" />
+
+        <View
+            android:id="@+id/div_title"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?android:attr/listDivider"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent"
-            map:layout_constraintTop_toTopOf="parent" />
+            map:layout_constraintTop_toBottomOf="@id/txt_devicetitle" />
 
         <ScrollView
             android:id="@+id/scrollview_bluetooth"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:visibility="visible"
             map:layout_constraintBottom_toTopOf="@+id/div_bluetooth"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent"
-            map:layout_constraintTop_toBottomOf="@+id/txt_devicetitle">
+            map:layout_constraintTop_toBottomOf="@id/div_title"
+            map:layout_constraintVertical_bias="0">
 
             <LinearLayout
                 android:id="@+id/bluetooth_list"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:weightSum="100"
                 android:divider="?android:attr/listDivider"
-                android:showDividers="middle">
+                android:orientation="vertical"
+                android:showDividers="middle"
+                android:weightSum="100">
 
                 <View
                     android:id="@+id/div_blue_element"
@@ -83,43 +255,111 @@
         <View
             android:id="@+id/div_bluetooth"
             android:layout_width="0dp"
-            android:layout_height="1dp"
+            android:layout_height="0dp"
             android:background="?android:attr/listDivider"
-            map:layout_constraintBottom_toTopOf="@+id/btn_fav"
+            map:layout_constraintBottom_toBottomOf="parent"
             map:layout_constraintEnd_toEndOf="parent"
             map:layout_constraintStart_toStartOf="parent" />
 
-        <ToggleButton
-            android:id="@+id/btn_fav"
-            android:layout_width="152dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="49"
-            android:backgroundTint="#6200ee"
-            android:onClick="toggleFavorites"
-
-            android:text="Favorites"
-            android:textColor="#FFFFFF"
-            android:textOff="Favorites"
-            android:textOn="List all"
-            map:layout_constraintBottom_toBottomOf="parent"
-            map:layout_constraintEnd_toEndOf="parent"
-            map:layout_constraintStart_toEndOf="@+id/btn_theme" />
-
-        <Button
-            android:id="@+id/btn_theme"
-            android:layout_width="145dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="5dp"
-            android:layout_weight="49"
-            android:onClick="onChangeThemeButton"
-            android:text="Swap Theme"
-            map:cornerRadius="2dp"
-            map:layout_constraintBottom_toBottomOf="parent"
-            map:layout_constraintEnd_toStartOf="@+id/btn_fav"
-            map:layout_constraintStart_toStartOf="parent"
-            map:layout_constraintTop_toBottomOf="@+id/div_bluetooth"
-            map:layout_constraintVertical_bias="0.0" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <View
+        android:id="@+id/div_nav"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        map:layout_constraintBottom_toTopOf="@id/txt_podo_count"
+        map:layout_constraintEnd_toEndOf="@id/layout_nav"
+        map:layout_constraintStart_toStartOf="@id/layout_nav" />
+
+    <ImageView
+        android:id="@+id/img_run"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginEnd="42dp"
+        map:layout_constraintBottom_toBottomOf="@id/div_nav2"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="@+id/layout_bluetooth"
+        map:layout_constraintTop_toBottomOf="@id/div_nav"
+        map:srcCompat="@drawable/ic_baseline_directions_run_24" />
+
+    <TextView
+        android:id="@+id/txt_podo_count"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:text="0"
+        map:layout_constraintBottom_toBottomOf="@id/div_nav2"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toEndOf="@+id/img_run"
+        map:layout_constraintTop_toTopOf="@id/img_run" />
+
+    <View
+        android:id="@+id/div_nav2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?android:attr/listDivider"
+        map:layout_constraintBottom_toTopOf="@id/layout_nav"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintStart_toStartOf="@id/layout_nav" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/layout_nav"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintHorizontal_bias="0.0"
+        map:layout_constraintStart_toEndOf="@id/div_map_list">
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/nav_bar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            map:labelVisibilityMode="auto"
+            map:layout_constraintBottom_toBottomOf="parent"
+            map:layout_constraintEnd_toEndOf="parent"
+            map:layout_constraintHorizontal_bias="1.0"
+            map:layout_constraintStart_toStartOf="parent"
+            map:layout_constraintTop_toTopOf="parent"
+            map:layout_constraintVertical_bias="0.0"
+            map:menu="@menu/bottom_navigation_menu">
+
+        </com.google.android.material.bottomnavigation.BottomNavigationView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <Space
+        android:id="@+id/space_bottom_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@+id/div_map_list"
+        map:layout_constraintStart_toStartOf="@+id/map" />
+
+    <Space
+        android:id="@+id/space_top_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        map:layout_constraintEnd_toStartOf="@+id/div_map_list"
+        map:layout_constraintStart_toStartOf="@+id/map"
+        map:layout_constraintTop_toBottomOf="@id/div_topbar" />
+
+    <Space
+        android:id="@+id/space_left_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@id/map"
+        map:layout_constraintStart_toStartOf="parent"
+        map:layout_constraintTop_toTopOf="parent" />
+
+    <Space
+        android:id="@+id/space_right_map"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@+id/div_map_list"
+        map:layout_constraintStart_toEndOf="@+id/map"
+        map:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

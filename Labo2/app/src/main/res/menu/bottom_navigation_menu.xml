@@ -1,0 +1,22 @@
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_btn_theme"
+        android:icon="@drawable/darkmode"
+        android:title="Themes"
+        android:onClick="onChangeThemeButton"
+        app:actionLayout="@layout/switch_item"/>
+    <item
+        android:id="@+id/menu_btn_fav"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_favorite_24"
+        android:onClick="toggleFavorites"
+        android:title="Favorites" />
+    <item
+        android:id="@+id/menu_btn_settings"
+        android:enabled="true"
+        android:icon="@drawable/ic_baseline_translate_24"
+        android:onClick="onLanguageChange"
+        android:title="Language" />
+
+</menu>
