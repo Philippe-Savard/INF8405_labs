@@ -16,12 +16,15 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -39,7 +42,14 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -76,11 +86,13 @@ public class MapsActivity extends AppCompatActivity
     private ArrayList<Marker> markers = new ArrayList<>();
     private Stack<String> favorites = new Stack<String>();
     private HashMap<String, String[]> devices = new HashMap<String, String[]>();
-    SharedPreferences sharedPref;
     Thread newThread;
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
+    private static String user_email = "";
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
 
     @Override
@@ -89,7 +101,7 @@ public class MapsActivity extends AppCompatActivity
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
         hideToolBar();
-        sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
+        user_email = getIntent().getStringExtra("user_email");
 
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -149,26 +161,41 @@ public class MapsActivity extends AppCompatActivity
     ////////////////////////////////////////////
 
     private void fetchDevicesFromStorage() {
-        // Retrieve BluetoothDevices from saved files and create a map with the MAC address as Key value
-        Map<String, String> rawBluetoothDevices = (Map<String, String>) sharedPref.getAll();
-        for (Map.Entry<String, String> device : rawBluetoothDevices.entrySet()) {
-            devices.put(device.getKey(), device.getValue().split(",")); // Add it to runtime reference of all devices
-            if (checkFavorite(device.getKey()))
-                favorites.push(device.getKey()); // Adds it to favorites if saved as favorites
-            // Add device to the view. Maps and side pannel
-            addDeviceToSideView(device.getKey());
-            addMarker(device.getKey(), new LatLng(Double.parseDouble(devices.get(device.getKey())[6]), Double.parseDouble(devices.get(device.getKey())[7])));
-        }
+        db.collection("users").document(user_email).collection("devices")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot device : task.getResult()) {
+                            String[] deviceInfo = new String[8];
+                            deviceInfo[0] = device.get("deviceName").toString();
+                            deviceInfo[1] = device.get("deviceClass").toString();
+                            deviceInfo[2] = device.get("deviceMACAddress").toString();
+                            deviceInfo[3] = device.get("deviceBondState").toString();
+                            deviceInfo[4] = device.get("deviceType").toString();
+                            deviceInfo[5] = device.get("isFavorite").toString();
+                            deviceInfo[6] = device.get("latitude").toString();
+                            deviceInfo[7] = device.get("longitude").toString();
+
+                            devices.put(device.getId(), deviceInfo); // Add it to runtime reference of all devices
+                            if (checkFavorite(device.getId()))
+                                favorites.push(device.getId()); // Adds it to favorites if saved as favorites
+                            // Add device to the view. Maps and side pannel
+                            addDeviceToSideView(device.getId());
+                            addMarker(device.getId(), new LatLng(Double.parseDouble(devices.get(device.getId())[6]), Double.parseDouble(devices.get(device.getId())[7])));
+                        }
+                    } else {
+                        Log.w("TAG", "Error getting documents.", task.getException());
+                    }
+                });
     }
 
     private void saveDeviceToStorage(String deviceName, String deviceClass, String deviceMACAddress, String deviceBondState, String deviceType) {
-        sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
-        if (!sharedPref.contains(deviceMACAddress)) { // Check to see if device exists in storage
-            if ( !devices.containsKey(deviceMACAddress)){ // Check to see if device exists in runtime saved devices
-                String[] info = {deviceName, deviceClass, deviceMACAddress, deviceBondState, deviceType, "false"}; // Create string array that holds all device info. Favorite is set to False by default
-                devices.put(deviceMACAddress, info);
-                addDeviceToSideView(deviceMACAddress);
-            }
+        DocumentReference deviceRef = db.collection("users").document(user_email).collection("devices").document(deviceMACAddress);
+
+        if (!devices.containsKey(deviceMACAddress)){ // Check to see if device exists in runtime saved devices
+            String[] info = {deviceName, deviceClass, deviceMACAddress, deviceBondState, deviceType, "false"}; // Create string array that holds all device info. Favorite is set to False by default
+            devices.put(deviceMACAddress, info);
+            addDeviceToSideView(deviceMACAddress);
         }
         else { removeMarker(deviceMACAddress); }
 
@@ -195,14 +222,23 @@ public class MapsActivity extends AppCompatActivity
                 }
 
                 String[] moreInfo = devices.get(deviceMACAddress);
-                String device = moreInfo[0] + "," + moreInfo[1] + "," + moreInfo[2] + "," + moreInfo[3] + "," + moreInfo[4] + "," + moreInfo[5] + "," + moreInfo[6] + "," + moreInfo[7];
                 // Save device with all info (device and location) to storage
-                SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putString(deviceMACAddress, device);
-                editor.apply();
+                Map<String, Object> device = new HashMap<>();
+                device.put("deviceName", moreInfo[0]);
+                device.put("deviceClass", moreInfo[1]);
+                device.put("deviceMACAddress", moreInfo[2]);
+                device.put("deviceBondState", moreInfo[3]);
+                device.put("deviceType", moreInfo[4]);
+                device.put("isFavorite", moreInfo[5]);
+                device.put("latitude", moreInfo[6]);
+                device.put("longitude", moreInfo[7]);
+                deviceRef.set(device);
             }
         });
     }
+
+
+
 
     ////////////////////////////////////////////
     //       BLUETOOTH RELATED FUNCTIONS      //
@@ -230,8 +266,7 @@ public class MapsActivity extends AppCompatActivity
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) return;
 
-        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED) {
-        } else {
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, PERMISSIONS_REQUEST_ENABLE_BLUETOOTH);
         }
         while(true) {
@@ -247,9 +282,7 @@ public class MapsActivity extends AppCompatActivity
 
     // Function that checks if the device stored is tagged as favorite or not and returns bool value
     private Boolean checkFavorite(String deviceMACAddress) {
-        String deviceInfo = sharedPref.getString(deviceMACAddress, null);
-        String[] infoArray = deviceInfo.split(",");
-        return Boolean.parseBoolean(infoArray[5]);
+        return Boolean.parseBoolean(devices.get(deviceMACAddress)[5]);
     }
 
 
@@ -260,8 +293,6 @@ public class MapsActivity extends AppCompatActivity
 
     // Function that changes the favorite status of a specific bluetooth device.
     private void modifyDeviceFavoriteStatus(String deviceMACAddress) {
-        String deviceInfo = sharedPref.getString(deviceMACAddress, null);
-        String[] infoArray = deviceInfo.split(",");
         Boolean favorite = !checkFavorite(deviceMACAddress);
         // We either add or take out of favorites based on the current state of the device
         if (favorite)
@@ -269,11 +300,20 @@ public class MapsActivity extends AppCompatActivity
         else
             favorites.remove(deviceMACAddress);
         devices.get(deviceMACAddress)[5] = String.valueOf(favorite);
-        String device = infoArray[0] + "," + infoArray[1] + "," + infoArray[2] + "," + infoArray[3] + "," + infoArray[4] + "," + favorite + "," + infoArray[6] + "," + infoArray[7];
-        // Change status in storage
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(deviceMACAddress, device);
-        editor.apply();
+        String[] moreInfo = devices.get(deviceMACAddress);
+        // Save device with all info (device and location) to storage
+        Map<String, Object> device = new HashMap<>();
+        device.put("deviceName", moreInfo[0]);
+        device.put("deviceClass", moreInfo[1]);
+        device.put("deviceMACAddress", moreInfo[2]);
+        device.put("deviceBondState", moreInfo[3]);
+        device.put("deviceType", moreInfo[4]);
+        device.put("isFavorite", moreInfo[5]);
+        device.put("latitude", moreInfo[6]);
+        device.put("longitude", moreInfo[7]);
+        db.collection("users").document(user_email).collection("devices").document(deviceMACAddress).set(device);
+
+
     }
 
     ////////////////////////////////////////////
