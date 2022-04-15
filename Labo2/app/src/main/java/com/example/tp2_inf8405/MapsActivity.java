@@ -86,7 +86,6 @@ public class MapsActivity extends AppCompatActivity
     private ArrayList<Marker> markers = new ArrayList<>();
     private Stack<String> favorites = new Stack<String>();
     private HashMap<String, String[]> devices = new HashMap<String, String[]>();
-    SharedPreferences sharedPref;
     Thread newThread;
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
@@ -103,7 +102,6 @@ public class MapsActivity extends AppCompatActivity
         setContentView(R.layout.activity_maps);
         hideToolBar();
         user_email = getIntent().getStringExtra("user_email");
-        sharedPref = getSharedPreferences("BluetoothDevices", MODE_PRIVATE);
 
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
@@ -284,8 +282,6 @@ public class MapsActivity extends AppCompatActivity
 
     // Function that checks if the device stored is tagged as favorite or not and returns bool value
     private Boolean checkFavorite(String deviceMACAddress) {
-        String deviceInfo = sharedPref.getString(deviceMACAddress, null);
-        String[] infoArray = deviceInfo.split(",");
         return Boolean.parseBoolean(devices.get(deviceMACAddress)[5]);
     }
 
