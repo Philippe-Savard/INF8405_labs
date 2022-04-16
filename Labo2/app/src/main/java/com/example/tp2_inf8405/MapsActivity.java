@@ -92,8 +92,10 @@ public class MapsActivity extends AppCompatActivity
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static long initDownload = 0;
     private static long initUpload = 0;
+    private static long initBattery = 0;
     private Intent batteryStatus = new Intent();
     private static long initEnergy = 0;
+    private BatteryManager batteryManager;
 
 
 
@@ -102,12 +104,11 @@ public class MapsActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         batteryStatus = registerReceiver(null, ifilter);
-        BatteryManager batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
-        
-        long johnn = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_ENERGY_COUNTER);
-        Log.d("gggg", String.valueOf(johnn));
+        batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+
         initDownload = TrafficStats.getTotalRxBytes();
         initUpload = TrafficStats.getTotalTxBytes();
+        initBattery = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
 
 
         // Retrieve the content view that renders the map.
@@ -283,13 +284,15 @@ public class MapsActivity extends AppCompatActivity
         }
         while(true) {
             // Task done in perpetuity by dedicated thread
-            long currentDownload = TrafficStats.getTotalRxBytes() - initDownload;
-            long currentUpload = TrafficStats.getTotalTxBytes() - initUpload;
+            long currentDownloadDelta = TrafficStats.getTotalRxBytes() - initDownload;
+            long currentUploadDelta = TrafficStats.getTotalTxBytes() - initUpload;
             int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
             int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-            Log.d("battery", String.valueOf(level/scale));
-            Log.d("joebs", String.valueOf(currentDownload));
-            Log.d("joeb", String.valueOf(currentUpload));
+            long currentBatteryDelta = initBattery - batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+            Log.d("currentBatteryDelta", String.valueOf(currentBatteryDelta));
+            Log.d("battery", String.valueOf(level * 100/scale));
+            Log.d("currentUploadDelta", String.valueOf(currentUploadDelta));
+            Log.d("currentDownloadDelta", String.valueOf(currentDownloadDelta));
             bluetoothAdapter.startDiscovery();
             TimeUnit.SECONDS.sleep(15); // Discovery takes 12 seconds so we wait a little extra to ensure no discovery overlap
         }
