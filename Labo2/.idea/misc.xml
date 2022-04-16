@@ -4,11 +4,22 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.431" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/darkmode.xml" value="0.41" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/ic__4px.xml" value="0.41" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/ic_baseline_favorite_24.xml" value="0.41" />
         <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.431" />
         <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/rounded_corners.xml" value="0.52" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/drawable/settings.xml" value="0.41" />
         <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/activity_maps.xml" value="0.2" />
         <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/activity_splash.xml" value="0.25" />
-        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/on_bluetooth_click.xml" value="0.18" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/fragment_bluetooth_dialog.xml" value="0.1484375" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/on_bluetooth_click.xml" value="0.33" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/rounded_corners.xml" value="0.25" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/layout/switch_item.xml" value="0.33" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/menu/bottom_navigation_menu.xml" value="0.18" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/menu/navigation_drawer.xml" value="0.27057291666666666" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.41" />
+        <entry key="..\:/PROJECTS/INF8405_labs/Labo2/app/src/main/res/xml/root_preferences.xml" value="0.2685643564356436" />
         <entry key="..\:/Poly/Session8/INF8405/Lab/Labo2/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.298" />
         <entry key="..\:/Poly/Session8/INF8405/Lab/Labo2/app/src/main/res/drawable/ic_launcher_background.xml" value="0.298" />
         <entry key="..\:/Poly/Session8/INF8405/Lab/Labo2/app/src/main/res/layout/activity_maps.xml" value="0.75" />

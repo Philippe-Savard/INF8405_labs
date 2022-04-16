@@ -8,29 +8,29 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Color;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
-import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -41,23 +41,22 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 
 
-public class MapsActivity extends AppCompatActivity
-        implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
+public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarkerClickListener, OnMapReadyCallback {
 
     /////////////////////////////////////
     //         MAPS ATTRIBUTES         //
@@ -80,18 +79,32 @@ public class MapsActivity extends AppCompatActivity
     private static final int PERMISSIONS_REQUEST_ENABLE_BLUETOOTH = 2;
 
     /////////////////////////////////////
+    //      SENSORS ATTRIBUTES         //
+    /////////////////////////////////////
+    private SensorManager sensorManager;
+    protected List<Sensor> deviceSensors;
+    private TextView stepCount;
+    private Sensor stepSensor;
+    private Sensor lightSensor;
+    private boolean activityRecongnitionPermissionGranted;
+    private static final int PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION = 2;
+
+    /////////////////////////////////////
     //        OTHER ATTRIBUTES         //
     /////////////////////////////////////
     static boolean isDayMode = true;
     private ArrayList<Marker> markers = new ArrayList<>();
-    private Stack<String> favorites = new Stack<String>();
-    private HashMap<String, String[]> devices = new HashMap<String, String[]>();
-    Thread newThread;
+    private Stack<String> favorites = new Stack<>();
+    private HashMap<String, String[]> devices = new HashMap<>();
+    Thread discoveryThread;
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
     private static String user_email = "";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    BottomNavigationView bottomNavigationView;
+    private TextView light;
+    private TextView txt_device;
 
 
 
@@ -103,20 +116,34 @@ public class MapsActivity extends AppCompatActivity
         hideToolBar();
         user_email = getIntent().getStringExtra("user_email");
 
+        txt_device = findViewById(R.id.txt_devicetitle);
+
+        bottomNavigationView = findViewById(R.id.nav_bar);
+        //bottomNavigationView.setOnItemSelectedListener(this);
+
+        // Get all the available sensors on the device
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
+
+        getPhysicalActivityPermission();
+        if (activityRecongnitionPermissionGranted) {
+            stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
+        }
+
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
         // Construct a FusedLocationProviderClient.
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-
         // Build the map.
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+        Objects.requireNonNull(mapFragment).getMapAsync(this);
 
         // Create receiver able to collect information upon bluetooth discovery
         IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
         registerReceiver(receiver, filter);
 
         //Create new thread that will only scan for bluetooth devices
-        newThread = new Thread(() -> {
+        discoveryThread = new Thread(() -> {
             try {
                 startBluetoothDiscovery();
             } catch (InterruptedException e) {
@@ -125,41 +152,90 @@ public class MapsActivity extends AppCompatActivity
         });
     }
 
-    // Manipulates the map when it's available.
     @Override
-    public void onMapReady(GoogleMap map) {
+    protected void onStart(){
+        super.onStart();
+
+        SensorEventListener lightSensorListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                float lux = sensorEvent.values[0];
+                light = findViewById(R.id.txt_lux);
+                light.setText(String.valueOf(lux));
+
+                if (lux >= 50 && !isDayMode) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    isDayMode = true;
+                }
+                if (lux <= 10 && isDayMode) {
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    isDayMode = false;
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        };
+
+        sensorManager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_UI);
+        SensorEventListener stepCounterListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent sensorEvent) {
+                float totalStepCount = sensorEvent.values[0];
+                stepCount = findViewById(R.id.txt_podo_count);
+                stepCount.setText( String.valueOf(totalStepCount));
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int i) {
+
+            }
+        };
+        sensorManager.registerListener(stepCounterListener, stepSensor, SensorManager.SENSOR_DELAY_UI);
+    }
+
+
+    /**
+     * Manipulates the map when it's available.
+     * @param map the map to update
+     */
+    @Override
+    public void onMapReady(@NonNull GoogleMap map) {
         this.map = map;
         this.map.setOnMarkerClickListener(this);
 
-        new CountDownTimer(1500, 1000) { // Create a timer to wait for things to render
-            public void onTick(long millisUntilFinished) {
-                // Do nothing
-            }
+        // Change map's style
+        if(isDayMode){
+            this.map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.day_theme));
+        } else {
+            this.map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.night_theme));
+        }
 
-            public void onFinish() {
-                // Prompt the user for location permission.
-                getLocationPermission();
+        getLocationPermission();
 
-                // Turn on the My Location layer and the related control on the map.
-                updateLocationUI();
+        // Turn on the My Location layer and the related control on the map.
+        updateLocationUI();
 
-                // Get the current location of the device and set the position of the map.
-                getDeviceLocation();
-                bluetooth_layout = findViewById(R.id.bluetooth_list);
+        // Get the current location of the device and set the position of the map.
+        getDeviceLocation();
+        bluetooth_layout = findViewById(R.id.bluetooth_list);
 
-                fetchDevicesFromStorage(); // Retrieve previously saved bluetooth devices from storage
-                if (!threadStarted) {
-                    newThread.start(); // Start constant bluetooth device discovery for thread previously defined
-                    threadStarted = true;
-                }
-            }
-        }.start();
+        fetchDevicesFromStorage(); // Retrieve previously saved bluetooth devices from storage
+        if (!threadStarted) {
+            discoveryThread.start(); // Start constant bluetooth device discovery for thread previously defined
+            threadStarted = true;
+        }
     }
 
     ////////////////////////////////////////////
     //  FILE MANIPULATION RELATED FUNCTIONS   //
     ////////////////////////////////////////////
 
+    /**
+     * Function to get device from the storage
+     */
     private void fetchDevicesFromStorage() {
         db.collection("users").document(user_email).collection("devices")
                 .get()
@@ -179,7 +255,7 @@ public class MapsActivity extends AppCompatActivity
                             devices.put(device.getId(), deviceInfo); // Add it to runtime reference of all devices
                             if (checkFavorite(device.getId()))
                                 favorites.push(device.getId()); // Adds it to favorites if saved as favorites
-                            // Add device to the view. Maps and side pannel
+                            // Add device to the view. Maps and side panel
                             addDeviceToSideView(device.getId());
                             addMarker(device.getId(), new LatLng(Double.parseDouble(devices.get(device.getId())[6]), Double.parseDouble(devices.get(device.getId())[7])));
                         }
@@ -189,6 +265,14 @@ public class MapsActivity extends AppCompatActivity
                 });
     }
 
+    /**
+     * Function to save a device to storage
+     * @param deviceName name of the device
+     * @param deviceClass class of the device
+     * @param deviceMACAddress MAC address of the device
+     * @param deviceBondState bonding state of the device
+     * @param deviceType type of the device
+     */
     private void saveDeviceToStorage(String deviceName, String deviceClass, String deviceMACAddress, String deviceBondState, String deviceType) {
         DocumentReference deviceRef = db.collection("users").document(user_email).collection("devices").document(deviceMACAddress);
 
@@ -199,27 +283,31 @@ public class MapsActivity extends AppCompatActivity
         }
         else { removeMarker(deviceMACAddress); }
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        {
             return;
         }
-        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation(); // Get current location
-        locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-            @Override
-            public void onComplete(@NonNull Task<Location> task) {
-                if (task.isSuccessful()) {
-                    // Set the map's camera position to the current location of the device.
-                    lastKnownLocation = task.getResult();
-                    if (lastKnownLocation != null) {
-                        LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
-                        addMarker(deviceMACAddress, deviceLocation); // Add marker to map
-                        String[] tempDevice = devices.get(deviceMACAddress); // Update info device with location (latitude and longitude)
-                        devices.put(deviceMACAddress, new String[]{tempDevice[0], tempDevice[1], tempDevice[2], tempDevice[3], tempDevice[4], tempDevice[5], String.valueOf(lastKnownLocation.getLatitude()), String.valueOf(lastKnownLocation.getLongitude())});
-                    }
-                } else { // If we cannot access the current location
-                    map.moveCamera(CameraUpdateFactory
-                            .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                    map.getUiSettings().setMyLocationButtonEnabled(false);
+        // Get current location
+        Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
+        locationResult.addOnCompleteListener(this, task -> {
+            if (task.isSuccessful()) {
+                // Set the map's camera position to the current location of the device.
+                lastKnownLocation = task.getResult();
+                if (lastKnownLocation != null) {
+                    LatLng deviceLocation = new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude());
+                    // Add marker to map
+                    addMarker(deviceMACAddress, deviceLocation);
+                    // Update info device with location (latitude and longitude)
+                    String[] tempDevice = devices.get(deviceMACAddress);
+                    devices.put(deviceMACAddress, new String[]{Objects.requireNonNull(tempDevice)[0], tempDevice[1], tempDevice[2],
+                            tempDevice[3], tempDevice[4], tempDevice[5], String.valueOf(lastKnownLocation.getLatitude()),
+                            String.valueOf(lastKnownLocation.getLongitude())});
                 }
+            } else { // If we cannot access the current location
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                map.getUiSettings().setMyLocationButtonEnabled(false);
+            }
 
                 String[] moreInfo = devices.get(deviceMACAddress);
                 // Save device with all info (device and location) to storage
@@ -233,7 +321,6 @@ public class MapsActivity extends AppCompatActivity
                 device.put("latitude", moreInfo[6]);
                 device.put("longitude", moreInfo[7]);
                 deviceRef.set(device);
-            }
         });
     }
 
@@ -244,24 +331,33 @@ public class MapsActivity extends AppCompatActivity
     //       BLUETOOTH RELATED FUNCTIONS      //
     ////////////////////////////////////////////
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
+    /**
+     * Create a BroadcastReceiver for ACTION_FOUND.
+     */
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
                 // Discovery has found a device. Get the BluetoothDevice object and its info from the Intent.
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) { return; }
+                if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+                    return;
+                }
 
                 int classNo = device.getBluetoothClass().getDeviceClass();
                 if (classNo != UNCATEGORIZED) {
                     // Use the DeviceInfoConverter to convert the class, bond state and type of device
-                    saveDeviceToStorage(device.getName(), DeviceInfoConverter.ConvertDeviceClass(classNo), device.getAddress(), DeviceInfoConverter.ConvertBondState(device.getBondState()), DeviceInfoConverter.ConvertType(device.getType()));
+                    saveDeviceToStorage(device.getName(), DeviceInfoConverter.ConvertDeviceClass(classNo), device.getAddress(),
+                            DeviceInfoConverter.ConvertBondState(device.getBondState()), DeviceInfoConverter.ConvertType(device.getType()));
                 }
             }
         }
     };
 
+    /**
+     * Function to start the bluetooth discovery
+     * @throws InterruptedException
+     */
     private void startBluetoothDiscovery() throws InterruptedException {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) return;
@@ -269,7 +365,8 @@ public class MapsActivity extends AppCompatActivity
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH}, PERMISSIONS_REQUEST_ENABLE_BLUETOOTH);
         }
-        while(true) {
+
+        while(!Thread.currentThread().isInterrupted()) {
             // Task done in perpetuity by dedicated thread
             bluetoothAdapter.startDiscovery();
             TimeUnit.SECONDS.sleep(15); // Discovery takes 12 seconds so we wait a little extra to ensure no discovery overlap
@@ -280,18 +377,18 @@ public class MapsActivity extends AppCompatActivity
     //       FAVORITES RELATED FUNCTIONS      //
     ////////////////////////////////////////////
 
-    // Function that checks if the device stored is tagged as favorite or not and returns bool value
+    /**
+     * Function that checks if the device stored is tagged as favorite or not and returns bool value
+     * @param deviceMACAddress the desired MAC address to be checked
+     * @return true if the device for the provided MAC address is favorite
+     */
     private Boolean checkFavorite(String deviceMACAddress) {
         return Boolean.parseBoolean(devices.get(deviceMACAddress)[5]);
     }
 
-
-    public void toggleFavorites(View view) {
-        isFavoriteView = !isFavoriteView; // Set isFavoriteView to the opposite bool value
-        updateSideViewDevices();
-    }
-
-    // Function that changes the favorite status of a specific bluetooth device.
+    /**
+     *    Function that changes the favorite status of a specific bluetooth device.
+     */
     private void modifyDeviceFavoriteStatus(String deviceMACAddress) {
         Boolean favorite = !checkFavorite(deviceMACAddress);
         // We either add or take out of favorites based on the current state of the device
@@ -319,17 +416,27 @@ public class MapsActivity extends AppCompatActivity
     ////////////////////////////////////////////
     //         MARKER RELATED FUNCTIONS       //
     ////////////////////////////////////////////
+
+    /**
+     * Function to add a device to the device's list
+     * @param deviceMACAddress the MAC Address of the device to add to the marker's list
+     * @param location position of the device
+     */
     private void addMarker(String deviceMACAddress, LatLng location) {
         Marker marker = map.addMarker(new MarkerOptions()
                 .position(location)
-                .title(devices.get(deviceMACAddress)[0]));
-        marker.setTag(deviceMACAddress);
+                .title(Objects.requireNonNull(devices.get(deviceMACAddress))[0]));
+        Objects.requireNonNull(marker).setTag(deviceMACAddress);
         markers.add(marker);
     }
 
+    /**
+     * Function to remove a tag from the marker's list
+     * @param deviceMACAddress the MAC Address of the device to remove
+     */
     private void removeMarker(String deviceMACAddress) {
         for (Marker marker: markers) {
-            if (marker.getTag().equals(deviceMACAddress)) {
+            if (Objects.requireNonNull(marker.getTag()).equals(deviceMACAddress)) {
                 marker.remove();
                 markers.remove(marker);
                 return;
@@ -337,6 +444,11 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * onClikEvent for the markers
+     * @param marker current marker that have been clicked
+     * @return
+     */
     @Override
     public boolean onMarkerClick(final Marker marker) {
         // Retrieve the data from the marker.
@@ -348,15 +460,23 @@ public class MapsActivity extends AppCompatActivity
     //         VIEW RELATED FUNCTIONS         //
     ////////////////////////////////////////////
 
-    // Function that updates the devices on the side view depending if we are in favortie view or not
+    /**
+     *  Function that updates the devices on the side view depending if we are in favorite view or not
+     */
     private void updateSideViewDevices() {
-        bluetooth_layout.removeAllViews(); // Take out all current devices from the view
+        // Take out all current devices from the view
+        bluetooth_layout.removeAllViews();
         for (HashMap.Entry<String, String[]> device : devices.entrySet()) {
-            if (Boolean.parseBoolean(device.getValue()[5]) || !isFavoriteView) // Checks if favorite is set to true or if we are in list all devices mode
+            // Checks if favorite is set to true or if we are in list all devices mode
+            if (Boolean.parseBoolean(device.getValue()[5]) || !isFavoriteView)
                 addDeviceToSideView(device.getKey());
         }
     }
 
+    /**
+     * Add a device to the side view.
+     * @param deviceMACAddress the MAC address to add to the side view.
+     */
     private void addDeviceToSideView(String deviceMACAddress) {
         TextView elementName = new TextView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -365,14 +485,19 @@ public class MapsActivity extends AppCompatActivity
         );
         elementName.setLayoutParams(params);
         elementName.setClickable(true);
-        elementName.setOnClickListener(view -> this.devicePopUpWindow(view, deviceMACAddress)); // Assures to create bluetooth popUp with MAC address upon device click
-        String deviceInfo = devices.get(deviceMACAddress)[0] + "\n" + deviceMACAddress; // Only add device name and MAC to side panel view
+        // Assures to create bluetooth popUp with MAC address upon device click
+        elementName.setOnClickListener(view -> this.devicePopUpWindow(view, deviceMACAddress));
+        // Only add device name and MAC to side panel view
+        String deviceInfo = Objects.requireNonNull(devices.get(deviceMACAddress))[0] + "\n" + deviceMACAddress;
 
         elementName.setText(deviceInfo);
         bluetooth_layout.addView(elementName); // Add device to the view
     }
 
-    // Function that retrieves all the device information and displays it on the popupWindow
+    /**
+     * Function that retrieves all the device information and displays it on the popupWindow
+     * @param deviceMACAddress the MAC address to retrieve to the side view.
+     */
     public void displayDeviceInfo(String deviceMACAddress){
         TextView elementName = new TextView(this);
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
@@ -380,57 +505,56 @@ public class MapsActivity extends AppCompatActivity
                 LinearLayout.LayoutParams.MATCH_PARENT
         );
         elementName.setLayoutParams(params);
+        elementName.setTextSize(14);
         String[] info = devices.get(deviceMACAddress);
         assert info != null;
         String deviceInfo = prettyPrint(deviceMACAddress);
 
         elementName.setText(deviceInfo);
-        elementName.setTextColor(Color.CYAN);
         device_info_layout.addView(elementName);
         device_info_layout.setTag(deviceMACAddress);
     }
 
+    /**
+     * Makes the AlertDialog appear
+     * @param view the current view
+     * @param deviceMACAddress the MAC address to display.
+     */
     public void devicePopUpWindow(View view, String deviceMACAddress) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
-
-        // create the popup window
-        int width = LinearLayout.LayoutParams.WRAP_CONTENT;
-        int height = LinearLayout.LayoutParams.WRAP_CONTENT;
-        final PopupWindow popupWindow = new PopupWindow(popupView, width, height, true);
-
-        // show the popup window
-        popupWindow.showAtLocation(view, Gravity.CENTER, 0, 0);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         device_info_layout = popupView.findViewById(R.id.bluetooth_device_info);
+        builder.setView(popupView);
 
         displayDeviceInfo(deviceMACAddress);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     ///////////////////////////////////////////////////////////
     //         PERMISSION AND MAPS RELATED FUNCTIONS         //
     ///////////////////////////////////////////////////////////
 
-    // Gets the current location of the device, and positions the map's camera.
+    /**
+     * Gets the current location of the device, and positions the map's camera.
+     */
     private void getDeviceLocation() {
         try {
             if (locationPermissionGranted) {
                 Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
-                locationResult.addOnCompleteListener(this, new OnCompleteListener<Location>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Location> task) {
-                        if (task.isSuccessful()) {
-                            // Set the map's camera position to the current location of the device.
-                            lastKnownLocation = task.getResult();
-                            if (lastKnownLocation != null) {
-                                map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                        new LatLng(lastKnownLocation.getLatitude(),
-                                                lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
-                            }
-                        } else {
-                            map.moveCamera(CameraUpdateFactory
-                                    .newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                locationResult.addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Set the map's camera position to the current location of the device.
+                        lastKnownLocation = task.getResult();
+                        if (lastKnownLocation != null) {
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), DEFAULT_ZOOM));
                         }
+                    } else {
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, DEFAULT_ZOOM));
+                        map.getUiSettings().setMyLocationButtonEnabled(false);
                     }
                 });
             }
@@ -439,12 +563,12 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
-
-    //Prompts the user for permission to use the device location.
+    /**
+     * Prompts the user for permission to use the device location.
+     */
     private void getLocationPermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
+                android.Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             locationPermissionGranted = true;
         } else {
             ActivityCompat.requestPermissions(this,
@@ -453,15 +577,35 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Prompts the user for permission to use the device physical activity detection.
+     */
+    private void getPhysicalActivityPermission() {
+        if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
+                Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
+            activityRecongnitionPermissionGranted = true;
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
+                    PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION);
+        }
+    }
 
-    // Handles the result of the request for location permissions.
+    /**
+     * Handles the result of the request for location permissions.
+     * @param requestCode request code number
+     * @param permissions required permissions to be granted
+     * @param grantResults result of the request
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode
-                == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {// If request is cancelled, the result arrays are empty.
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 locationPermissionGranted = true;
+            }
+        } else if (requestCode == PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                activityRecongnitionPermissionGranted = true;
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -469,8 +613,9 @@ public class MapsActivity extends AppCompatActivity
         updateLocationUI();
     }
 
-
-    // Updates the map's UI settings based on whether the user has granted location permission.
+    /**
+     * Updates the map's UI settings based on whether the user has granted location permission.
+     */
     private void updateLocationUI() {
         if (map == null) {
             return;
@@ -485,24 +630,21 @@ public class MapsActivity extends AppCompatActivity
                 lastKnownLocation = null;
                 getLocationPermission();
             }
-        } catch (SecurityException e)  {
-        }
-        // Update the style of the map based on the current day or night theme
-        if(isDayMode){
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.day_theme));
-        } else {
-            map.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.night_theme));
-        }
+        } catch (SecurityException ignored)  { }
     }
 
     //////////////////////////////////////////////
     //         BUTTON RELATED FUNCTIONS         //
     //////////////////////////////////////////////
 
-    // Function that changes the theme of the application upon change theme button click
-    public void onChangeThemeButton(View view){
-        int nightModeFlags = view.getContext().getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK; // Get the current state of day or night mode
-        switch (nightModeFlags) { // Switch based on current state
+    /**
+     * Function that changes the theme of the application upon change theme button click
+     */
+    public void onChangeThemeButton(MenuItem item) {
+        // Get the current state of day or night mode
+        int nightModeFlags = this.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        // Switch based on current state
+        switch (nightModeFlags) {
             case Configuration.UI_MODE_NIGHT_YES:
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                 isDayMode = true;
@@ -515,12 +657,42 @@ public class MapsActivity extends AppCompatActivity
         }
     }
 
+    /**
+     * Makes the favorite view appear or disappear
+     */
+    public void toggleFavorites(MenuItem item) {
+        // Set isFavoriteView to the opposite bool value
+        isFavoriteView = !isFavoriteView;
+        if (isFavoriteView){
+            this.txt_device.setText("Favorites");
+        } else {
+            this.txt_device.setText("Device list");
+        }
+        updateSideViewDevices();
+    }
+
+    /**
+     * Change the language
+     */
+    public void onLanguageChange(MenuItem item) {
+        // TODO : Mettre le code pour changer la langue ici
+    }
+
+    /**
+     * Handles the direction button onClick event in the alertDialog view.
+     * @param view the current view
+     */
     public void onDirectionsButtonClick(View view){
         String deviceMACAddress = (String) device_info_layout.getTag();
         // Create directions using current location as start and device position as destination
-        openGoogleMapsDirections(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), devices.get(deviceMACAddress)[6], devices.get(deviceMACAddress)[7]);
+        openGoogleMapsDirections(new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()),
+                Objects.requireNonNull(devices.get(deviceMACAddress))[6], Objects.requireNonNull(devices.get(deviceMACAddress))[7]);
     }
 
+    /**
+     * Handles the favorites button onClick event.
+     * @param view the current view
+     */
     public void onFavoritesButtonClick(View view){
         String deviceMACAddress = (String) device_info_layout.getTag();
         modifyDeviceFavoriteStatus(deviceMACAddress);
@@ -529,16 +701,27 @@ public class MapsActivity extends AppCompatActivity
         updateSideViewDevices();
     }
 
+    /**
+     * Handles the share button onClick event.
+     * @param view the current view
+     */
     public void onShareButtonClick(View view) {
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
-        sendIntent.putExtra(Intent.EXTRA_TEXT, prettyPrint((String) device_info_layout.getTag())); // Use the PrettyPrint output as sharable content
+        // Use the PrettyPrint output as sharable content
+        sendIntent.putExtra(Intent.EXTRA_TEXT, prettyPrint((String) device_info_layout.getTag()));
         sendIntent.setType("text/plain");
 
         Intent shareIntent = Intent.createChooser(sendIntent, null);
         startActivity(shareIntent);
     }
 
+    /**
+     * Function that opens the Google Map application for directions
+     * @param start
+     * @param endLatitude
+     * @param endLongitude
+     */
     private void openGoogleMapsDirections(LatLng start, String endLatitude, String endLongitude){
         // If the device does not have a map installed redirect to to google maps
         String startLatitude = String.valueOf(start.latitude);
@@ -558,7 +741,6 @@ public class MapsActivity extends AppCompatActivity
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(intent);
         }
-
     }
 
 
@@ -566,14 +748,20 @@ public class MapsActivity extends AppCompatActivity
     //         OTHER FUNCTIONS         //
     /////////////////////////////////////
 
-    // Function that displays the device information in a uniform way
+    /**
+     * Function that displays the device information in a uniform way.
+     * @param deviceMACAddress the MAC address of the device to display
+     * @return the string formatted for printing
+     */
     public String prettyPrint(String deviceMACAddress) {
         String[] info = devices.get(deviceMACAddress);
         return "- Device Name: " + info[0] + "\n" + "- Device Class: " + info[1] + "\n"+ "- MAC address: " + info[2] + "\n" +
                 "- Bond state of the device: " + info[3] + "\n" + "- Type of bluetooth device: " + info[4] + "\n" + "- Favorites: " + info[5];
     }
 
-    // Hide the view of top tool bar with TP2 name on it
+    /**
+     *  Hide the view of top tool bar with TP2 name on it
+     */
     public void hideToolBar() {
         int uiOptions = getWindow().getDecorView().getSystemUiVisibility();
         uiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;

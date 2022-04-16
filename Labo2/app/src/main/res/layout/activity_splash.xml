@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#4E4E4E"
+    android:theme="@style/Theme.TP2_INF8405"
     android:foregroundTint="#012180"
     tools:context=".SplashActivity">
 
@@ -26,7 +26,7 @@
         android:paddingEnd="15dp"
         android:text="GeoBluetooth"
         android:textAlignment="viewEnd"
-        android:textColor="#D8D7D7"
+        android:theme="@style/Theme.TP2_INF8405"
         android:textSize="60sp"
         app:layout_constraintBottom_toTopOf="@+id/guideline3"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,7 +41,7 @@
         android:paddingStart="60dp"
         android:text="Created by: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard "
         android:textAlignment="viewStart"
-        android:textColor="#EAE4E4"
+        android:theme="@style/Theme.TP2_INF8405"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline4" />
@@ -53,7 +53,7 @@
         android:paddingEnd="15dp"
         android:text="Version 1.0.0"
         android:textAlignment="viewEnd"
-        android:textColor="#EAE4E4"
+        android:theme="@style/Theme.TP2_INF8405"
         android:textSize="24sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
