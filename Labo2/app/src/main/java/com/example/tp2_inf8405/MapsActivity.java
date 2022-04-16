@@ -15,7 +15,9 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
+import android.net.TrafficStats;
 import android.net.Uri;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -84,10 +86,17 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private SensorManager sensorManager;
     protected List<Sensor> deviceSensors;
     private TextView stepCount;
+    private TextView light;
+    private TextView download;
+    private TextView upload;
+    private TextView battery;
+    private TextView energy;
     private Sensor stepSensor;
     private Sensor lightSensor;
     private boolean activityRecongnitionPermissionGranted;
     private static final int PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION = 2;
+
+
 
     /////////////////////////////////////
     //        OTHER ATTRIBUTES         //
@@ -97,14 +106,19 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private Stack<String> favorites = new Stack<>();
     private HashMap<String, String[]> devices = new HashMap<>();
     Thread discoveryThread;
+    Thread dataUpdateThread;
     private static Boolean isFavoriteView = false;
     private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
     private static String user_email = "";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     BottomNavigationView bottomNavigationView;
-    private TextView light;
     private TextView txt_device;
+    private static long initDownload = 0;
+    private static long initUpload = 0;
+    private static long initEnergy = 0;
+    private Intent batteryStatus = new Intent();
+    private BatteryManager batteryManager;
 
 
 
@@ -119,7 +133,23 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         txt_device = findViewById(R.id.txt_devicetitle);
 
         bottomNavigationView = findViewById(R.id.nav_bar);
-        //bottomNavigationView.setOnItemSelectedListener(this);
+
+
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        batteryStatus = registerReceiver(null, ifilter);
+        batteryManager = (BatteryManager) getSystemService(Context.BATTERY_SERVICE);
+
+        if (initDownload == 0 && initUpload == 0 && initEnergy == 0) {
+            initDownload = TrafficStats.getTotalRxBytes();
+            initUpload = TrafficStats.getTotalTxBytes();
+            initEnergy = batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+        }
+
+        download = findViewById(R.id.txt_download);
+        upload = findViewById(R.id.txt_upload);
+        battery = findViewById(R.id.txt_battery);
+        energy = findViewById(R.id.txt_energy);
+
 
         // Get all the available sensors on the device
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -143,6 +173,14 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         registerReceiver(receiver, filter);
 
         //Create new thread that will only scan for bluetooth devices
+        dataUpdateThread = new Thread(() -> {
+            try {
+                dataUpdate();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
         discoveryThread = new Thread(() -> {
             try {
                 startBluetoothDiscovery();
@@ -159,15 +197,15 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         SensorEventListener lightSensorListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                float lux = sensorEvent.values[0];
+                int lux = Math.round(sensorEvent.values[0]);
                 light = findViewById(R.id.txt_lux);
                 light.setText(String.valueOf(lux));
 
-                if (lux >= 50 && !isDayMode) {
+                if (lux > 50 && !isDayMode) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                     isDayMode = true;
                 }
-                if (lux <= 10 && isDayMode) {
+                if (lux < 5 && isDayMode) {
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                     isDayMode = false;
                 }
@@ -183,7 +221,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         SensorEventListener stepCounterListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent sensorEvent) {
-                float totalStepCount = sensorEvent.values[0];
+                int totalStepCount = Math.round(sensorEvent.values[0]);
                 stepCount = findViewById(R.id.txt_podo_count);
                 stepCount.setText( String.valueOf(totalStepCount));
             }
@@ -194,6 +232,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
             }
         };
         sensorManager.registerListener(stepCounterListener, stepSensor, SensorManager.SENSOR_DELAY_UI);
+        discoveryThread.start(); // Start constant bluetooth device discovery for thread previously defined
+        dataUpdateThread.start();
+
     }
 
 
@@ -223,10 +264,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         bluetooth_layout = findViewById(R.id.bluetooth_list);
 
         fetchDevicesFromStorage(); // Retrieve previously saved bluetooth devices from storage
-        if (!threadStarted) {
-            discoveryThread.start(); // Start constant bluetooth device discovery for thread previously defined
-            threadStarted = true;
-        }
     }
 
     ////////////////////////////////////////////
@@ -370,6 +407,31 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
             // Task done in perpetuity by dedicated thread
             bluetoothAdapter.startDiscovery();
             TimeUnit.SECONDS.sleep(15); // Discovery takes 12 seconds so we wait a little extra to ensure no discovery overlap
+        }
+    }
+
+    private void dataUpdate() throws InterruptedException {
+        while (!Thread.currentThread().isInterrupted()) {
+
+            // Task done in perpetuity by dedicated thread
+            long currentDownloadDelta = TrafficStats.getTotalRxBytes() - initDownload;
+            long currentUploadDelta = TrafficStats.getTotalTxBytes() - initUpload;
+            int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+            int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+            int currentBatteryLevel = Math.round(level * 100 / scale);
+            long currentEnergyDelta = initEnergy - batteryManager.getLongProperty(BatteryManager.BATTERY_PROPERTY_CHARGE_COUNTER);
+
+            runOnUiThread(() -> {
+                download.setText(String.valueOf(Math.round(currentDownloadDelta / 1000)));
+
+                upload.setText(String.valueOf(Math.round(currentUploadDelta / 1000)));
+
+                battery.setText(String.valueOf(currentBatteryLevel));
+
+                energy.setText(String.valueOf(Math.round(currentEnergyDelta) / 1000));
+            });
+
+            TimeUnit.SECONDS.sleep(5); // 5 seconds because
         }
     }
 

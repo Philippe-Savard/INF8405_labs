@@ -21,7 +21,7 @@
         map:srcCompat="@drawable/ic_baseline_bolt_24" />
 
     <TextView
-        android:id="@+id/txt_battery_value"
+        android:id="@+id/txt_energy"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -32,13 +32,13 @@
         tools:text="0" />
 
     <TextView
-        android:id="@+id/txt_pourcentage"
+        android:id="@+id/txt_energy_unit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:text="mAh"
         map:layout_constraintBottom_toTopOf="@+id/div_topbar"
-        map:layout_constraintStart_toEndOf="@id/txt_battery_value"
-        map:layout_constraintTop_toTopOf="parent"
-        tools:text="mA" />
+        map:layout_constraintStart_toEndOf="@id/txt_energy"
+        map:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/img_upload"
@@ -46,7 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         map:layout_constraintBottom_toTopOf="@id/div_topbar"
-        map:layout_constraintStart_toEndOf="@+id/txt_pourcentage"
+        map:layout_constraintStart_toEndOf="@+id/txt_energy_unit"
         map:layout_constraintTop_toTopOf="parent"
         map:srcCompat="@drawable/ic_baseline_arrow_upward_24" />
 
@@ -134,12 +134,12 @@
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         map:layout_constraintBottom_toTopOf="@id/div_topbar"
-        map:layout_constraintEnd_toStartOf="@+id/txt_battery_val"
+        map:layout_constraintEnd_toStartOf="@+id/txt_battery"
         map:layout_constraintTop_toTopOf="parent"
         map:srcCompat="@drawable/ic_baseline_battery_std_24" />
 
     <TextView
-        android:id="@+id/txt_battery_val"
+        android:id="@+id/txt_battery"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:text="0"
