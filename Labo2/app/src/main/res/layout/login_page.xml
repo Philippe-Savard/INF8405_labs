@@ -28,7 +28,7 @@
                 android:layout_height="0dp"
                 android:layout_weight=".25"
                 android:background="#A1A1A1"
-                android:hint="email"
+                android:hint="@string/email"
                 android:inputType="textEmailAddress"
                 android:padding="15dp"
                 android:textSize="15sp"
@@ -43,7 +43,7 @@
                 android:id="@+id/incorrect_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Please entre a valid email"
+                android:text="@string/please_entre_a_valid_email"
                 android:textColor="#FF0000" />
 
             <View
@@ -58,7 +58,7 @@
                 android:layout_height="0dp"
                 android:layout_weight=".25"
                 android:background="#A1A1A1"
-                android:hint="password"
+                android:hint="@string/password"
                 android:inputType="textPassword"
                 android:padding="15dp"
                 android:textSize="15sp"
@@ -73,7 +73,7 @@
                 android:id="@+id/incorrect_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="A password must be set"
+                android:text="@string/a_password_must_be_set"
                 android:textColor="#FF0000" />
 
 
@@ -88,13 +88,13 @@
                 android:layout_height="0dp"
                 android:layout_weight=".28"
                 android:onClick="on_login_button_click"
-                android:text="LOGIN" />
+                android:text="@string/login" />
 
             <TextView
                 android:id="@+id/incorrect_login"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Incorrect login credentials"
+                android:text="@string/incorrect_login_credentials"
                 android:textColor="#FF0000" />
 
             <View
@@ -117,7 +117,7 @@
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="0.4"
-                    android:text="Need an account?"
+                    android:text="@string/need_an_account"
                     android:textColor="#B6B6B6"
                     android:textSize="12sp" />
 
@@ -127,7 +127,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0.2"
                     android:onClick="on_sign_up_click"
-                    android:text="SIGN UP"
+                    android:text="@string/sign_up"
                     android:textColor="#1E88E5" />
             </LinearLayout>
         </LinearLayout>
@@ -137,7 +137,7 @@
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Login"
+        android:text="@string/login2"
         android:textColor="#C1C1C1"
         android:textSize="20sp"
         app:layout_constraintBottom_toBottomOf="parent"

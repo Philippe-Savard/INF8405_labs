@@ -204,7 +204,7 @@
             android:id="@+id/txt_devicetitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Device list"
+            android:text="@string/device_list"
             android:textAlignment="center"
             android:textSize="20sp"
             android:textStyle="bold"
