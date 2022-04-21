@@ -39,7 +39,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="sans-serif"
         android:paddingStart="60dp"
-        android:text="Created by: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard "
+        android:text="@string/created_by_n_frank_aristide_n_laurent_bolduc_n_matthew_paoli_n_philippe_savard"
         android:textAlignment="viewStart"
         android:theme="@style/Theme.TP2_INF8405"
         android:textSize="24sp"

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TP2_INF8405</string>
+    <string name="title_activity_maps">MapsActivity</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Bienvenue fragment vide</string>
+    <string name="device_list">Liste d\'appareils</string>
+    <string name="email">email</string>
+    <string name="please_entre_a_valid_email">Veuillez entrer une addresse email valide</string>
+    <string name="password">mot de passe</string>
+    <string name="a_password_must_be_set">Une mot de passe doit etre rentré</string>
+    <string name="login">Connexion</string>
+    <string name="incorrect_login_credentials">Information de connexion incorrecte</string>
+    <string name="need_an_account">Besoin d\'un compte?</string>
+    <string name="sign_up">S\'inscrire</string>
+    <string name="login2">Connexion</string>
+    <string name="device_info">Informations de l\'appereil</string>
+    <string name="share">Partager</string>
+    <string name="add_to_nfavorites">Ajouter aux\nfavoris</string>
+    <string name="directions">Directions</string>
+    <string name="n_register_an_account">\n Enregistrer un compte</string>
+    <string name="name">noms</string>
+    <string name="a_name_must_be_set">Un noms doit ajouter</string>
+    <string name="email2">email</string>
+    <string name="please_enter_a_valid_email">Veuillez entrer une address e-mail valide</string>
+    <string name="register">S\'inscrire</string>
+    <string name="already_have_an_account">Deja utilisateur?</string>
+    <string name="log_in">Connexion</string>
+    <string name="change_profile_picture">Modifier photos de profil</string>
+    <string name="themes">Themes</string>
+    <string name="favorites">Favoris</string>
+    <string name="language">Langue</string>
+    <string name="language_choice">Choisir la langue…</string>
+    <string name="language_en">Anglais</string>
+    <string name="language_fr">Français</string>
+    <string name="created_by_n_frank_aristide_n_laurent_bolduc_n_matthew_paoli_n_philippe_savard">Créé par: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard</string>
+</resources>

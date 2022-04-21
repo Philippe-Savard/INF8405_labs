@@ -3,8 +3,11 @@ package com.example.tp2_inf8405;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -34,6 +37,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +52,8 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Retrieve language preferences
+        loadLocale();
         setContentView(R.layout.activity_splash);
         waitForTimer();
         hideToolBr();
@@ -208,5 +214,30 @@ public class SplashActivity extends AppCompatActivity {
         uiOptions ^= View.SYSTEM_UI_FLAG_FULLSCREEN;
         uiOptions ^= View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
         getWindow().getDecorView().setSystemUiVisibility(uiOptions);
+    }
+    /**
+     * Function that displays the device information in a uniform way.
+     * @param lang the choosen language to set
+     */
+    private void setLocale(String lang) {
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+
+        //Save Data to shared preferences
+        SharedPreferences.Editor editor = getSharedPreferences("Settings",MODE_PRIVATE).edit();
+        editor.putString("My Language", lang);
+        editor.apply();
+    }
+
+    /**
+     *  Function that retrieves the language preferences of the user in the MapsActivity
+     */
+    public void loadLocale(){
+        SharedPreferences prefs = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
+        String langue = prefs.getString("My Language", "");
+        setLocale(langue);
     }
 }

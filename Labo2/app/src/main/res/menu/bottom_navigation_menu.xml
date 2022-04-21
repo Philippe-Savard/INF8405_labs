@@ -3,7 +3,7 @@
     <item
         android:id="@+id/menu_btn_theme"
         android:icon="@drawable/darkmode"
-        android:title="Themes"
+        android:title="@string/themes"
         android:onClick="onChangeThemeButton"
         app:actionLayout="@layout/switch_item"/>
     <item
@@ -11,12 +11,12 @@
         android:enabled="true"
         android:icon="@drawable/ic_baseline_favorite_24"
         android:onClick="toggleFavorites"
-        android:title="Favorites" />
+        android:title="@string/favorites" />
     <item
         android:id="@+id/menu_btn_settings"
         android:enabled="true"
         android:icon="@drawable/ic_baseline_translate_24"
         android:onClick="onLanguageChange"
-        android:title="Language" />
+        android:title="@string/language" />
 
 </menu>

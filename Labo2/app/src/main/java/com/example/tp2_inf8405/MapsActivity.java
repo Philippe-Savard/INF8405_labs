@@ -1,13 +1,16 @@
 package com.example.tp2_inf8405;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.hardware.Sensor;
@@ -52,6 +55,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Stack;
@@ -125,9 +129,13 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //Retrieve language preferences
+        loadLocale();
         // Retrieve the content view that renders the map.
         setContentView(R.layout.activity_maps);
         hideToolBar();
+
+
         user_email = getIntent().getStringExtra("user_email");
 
         txt_device = findViewById(R.id.txt_devicetitle);
@@ -280,7 +288,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot device : task.getResult()) {
                             String[] deviceInfo = new String[8];
-                            deviceInfo[0] = device.get("deviceName").toString();
+                            deviceInfo[0] = device.get("deviceName") == null ? " " : device.get("deviceName").toString();
                             deviceInfo[1] = device.get("deviceClass").toString();
                             deviceInfo[2] = device.get("deviceMACAddress").toString();
                             deviceInfo[3] = device.get("deviceBondState").toString();
@@ -726,18 +734,18 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         // Set isFavoriteView to the opposite bool value
         isFavoriteView = !isFavoriteView;
         if (isFavoriteView){
-            this.txt_device.setText("Favorites");
+            this.txt_device.setText(getResources().getString(R.string.favorites));
         } else {
-            this.txt_device.setText("Device list");
+            this.txt_device.setText(getResources().getString(R.string.device_list));
         }
         updateSideViewDevices();
     }
 
     /**
-     * Change the language
+     * Changes the language when button is clicked
      */
     public void onLanguageChange(MenuItem item) {
-        // TODO : Mettre le code pour changer la langue ici
+        showChangeLanguageDialog();
     }
 
     /**
@@ -805,6 +813,59 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         }
     }
 
+    //////////////////////////////////////////////
+    //         LANGUAGE RELATED FUNCTIONS       //
+    //////////////////////////////////////////////
+
+    /**
+     *  Function that shows a dialog box with a list of languages to choose from
+     */
+    private void showChangeLanguageDialog() {
+        //array of languages to display on dialog box
+        final String[] listLang ={getResources().getString(R.string.language_en), getResources().getString(R.string.language_fr)};
+        AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
+        mBuilder.setTitle(getResources().getString(R.string.language_choice));
+        mBuilder.setSingleChoiceItems(listLang, Locale.getDefault().getLanguage().equals("en") ? 0 : 1, (dialogInterface, i) -> {
+            if (i==0){
+                setLocale("en");
+            }
+            else{
+                setLocale("fr");
+            }
+            recreate();
+            //dismiss alert dialogue when language selected
+            dialogInterface.dismiss();
+        });
+        AlertDialog mDialog = mBuilder.create();
+        mDialog.show();
+    }
+
+    /**
+     * Function that displays the device information in a uniform way.
+     * @param lang the choosen language to set
+     */
+
+    private void setLocale(String lang) {
+        Locale locale = new Locale(lang);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
+
+        //Save Data to shared preferences
+        SharedPreferences.Editor editor = getSharedPreferences("Settings",MODE_PRIVATE).edit();
+        editor.putString("My Language", lang);
+        editor.apply();
+    }
+
+    /**
+     *  Function that retrieves the language preferences of the user in the MapsActivity
+     */
+    public void loadLocale(){
+        SharedPreferences prefs = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
+        String langue = prefs.getString("My Language", "");
+        setLocale(langue);
+    }
 
     //////////////////////////////////////
     //         OTHER FUNCTIONS         //
@@ -837,4 +898,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         super.onDestroy();
         unregisterReceiver(receiver);
     }
+
+
+
 }
