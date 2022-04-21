@@ -19,11 +19,11 @@
     <string name="hello_blank_fragment">Bienvenue fragment vide</string>
     <string name="device_list">Liste d\'appareils</string>
     <string name="email">email</string>
-    <string name="please_entre_a_valid_email">Veuillez entrer une addresse e-mail valide</string>
+    <string name="please_entre_a_valid_email">Veuillez entrer une addresse email valide</string>
     <string name="password">mot de passe</string>
-    <string name="a_password_must_be_set">Une mot de passe doit etre rentrer</string>
+    <string name="a_password_must_be_set">Une mot de passe doit etre rentré</string>
     <string name="login">Connexion</string>
-    <string name="incorrect_login_credentials">Information de connexion incorrect</string>
+    <string name="incorrect_login_credentials">Information de connexion incorrecte</string>
     <string name="need_an_account">Besoin d\'un compte?</string>
     <string name="sign_up">S\'inscrire</string>
     <string name="login2">Connexion</string>
@@ -43,5 +43,8 @@
     <string name="themes">Themes</string>
     <string name="favorites">Favoris</string>
     <string name="language">Langue</string>
-    <string name="created_by_n_frank_aristide_n_laurent_bolduc_n_matthew_paoli_n_philippe_savard">Creer par: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard</string>
+    <string name="language_choice">Choisir la langue…</string>
+    <string name="language_en">Anglais</string>
+    <string name="language_fr">Français</string>
+    <string name="created_by_n_frank_aristide_n_laurent_bolduc_n_matthew_paoli_n_philippe_savard">Créé par: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard</string>
 </resources>

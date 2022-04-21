@@ -42,5 +42,8 @@
     <string name="themes">Themes</string>
     <string name="favorites">Favorites</string>
     <string name="language">Language</string>
+    <string name="language_choice">Choose Language…</string>
+    <string name="language_en">English</string>
+    <string name="language_fr">French</string>
     <string name="created_by_n_frank_aristide_n_laurent_bolduc_n_matthew_paoli_n_philippe_savard">Created by: \n - Frank Aristide \n - Laurent Bolduc \n - Matthew Paoli \n - Philippe Savard</string>
 </resources>

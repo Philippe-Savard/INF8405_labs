@@ -288,7 +288,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot device : task.getResult()) {
                             String[] deviceInfo = new String[8];
-                            deviceInfo[0] = device.get("deviceName").toString();
+                            deviceInfo[0] = device.get("deviceName") == null ? " " : device.get("deviceName").toString();
                             deviceInfo[1] = device.get("deviceClass").toString();
                             deviceInfo[2] = device.get("deviceMACAddress").toString();
                             deviceInfo[3] = device.get("deviceBondState").toString();
@@ -734,9 +734,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         // Set isFavoriteView to the opposite bool value
         isFavoriteView = !isFavoriteView;
         if (isFavoriteView){
-            this.txt_device.setText("Favorites");
+            this.txt_device.setText(getResources().getString(R.string.favorites));
         } else {
-            this.txt_device.setText("Device list");
+            this.txt_device.setText(getResources().getString(R.string.device_list));
         }
         updateSideViewDevices();
     }
@@ -822,23 +822,19 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
      */
     private void showChangeLanguageDialog() {
         //array of languages to display on dialog box
-        final String[] listLang ={"English", "Francais"};
+        final String[] listLang ={getResources().getString(R.string.language_en), getResources().getString(R.string.language_fr)};
         AlertDialog.Builder mBuilder = new AlertDialog.Builder(MapsActivity.this);
-        mBuilder.setTitle("Choose Language...");
-        mBuilder.setSingleChoiceItems(listLang, -1, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                if (i==0){
-                    setLocale("en");
-                    recreate();
-                }
-                else{
-                    setLocale("fr");
-                    recreate();
-                }
-                //dismiss alert dialogue when language selected
-                dialogInterface.dismiss();
+        mBuilder.setTitle(getResources().getString(R.string.language_choice));
+        mBuilder.setSingleChoiceItems(listLang, Locale.getDefault().getLanguage().equals("en") ? 0 : 1, (dialogInterface, i) -> {
+            if (i==0){
+                setLocale("en");
             }
+            else{
+                setLocale("fr");
+            }
+            recreate();
+            //dismiss alert dialogue when language selected
+            dialogInterface.dismiss();
         });
         AlertDialog mDialog = mBuilder.create();
         mDialog.show();
@@ -854,7 +850,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         Locale.setDefault(locale);
         Configuration config = new Configuration();
         config.locale = locale;
-        getBaseContext().getResources().updateConfiguration(config,getBaseContext().getResources().getDisplayMetrics());
+        getBaseContext().getResources().updateConfiguration(config, getBaseContext().getResources().getDisplayMetrics());
 
         //Save Data to shared preferences
         SharedPreferences.Editor editor = getSharedPreferences("Settings",MODE_PRIVATE).edit();
@@ -869,7 +865,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         SharedPreferences prefs = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
         String langue = prefs.getString("My Language", "");
         setLocale(langue);
-
     }
 
     //////////////////////////////////////
