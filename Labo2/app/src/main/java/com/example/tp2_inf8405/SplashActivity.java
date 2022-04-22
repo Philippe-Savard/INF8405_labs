@@ -53,7 +53,7 @@ public class SplashActivity extends AppCompatActivity {
             }
 
             public void onFinish() {
-                setContentView(R.layout.login_page);
+                setContentView(R.layout.login_page); // Redirect to login page
                 findViewById(R.id.incorrect_email).setVisibility(View.GONE);
                 findViewById(R.id.incorrect_login).setVisibility(View.GONE);
                 findViewById(R.id.incorrect_password).setVisibility(View.GONE);
@@ -61,6 +61,9 @@ public class SplashActivity extends AppCompatActivity {
         }.start();
     }
 
+    /**
+     *  Function that changes view to sign up
+     */
     public void on_sign_up_click(View view){
         setContentView(R.layout.sign_up_page);
         findViewById(R.id.incorrect_email).setVisibility(View.GONE);
@@ -68,6 +71,9 @@ public class SplashActivity extends AppCompatActivity {
         findViewById(R.id.incorrect_name).setVisibility(View.GONE);
     }
 
+    /**
+     *  Function that changes view to login
+     */
     public void on_login_click(View view){
         setContentView(R.layout.login_page);
         findViewById(R.id.incorrect_email).setVisibility(View.GONE);
@@ -79,8 +85,8 @@ public class SplashActivity extends AppCompatActivity {
         EditText email = findViewById(R.id.login_email);
         EditText password = findViewById(R.id.login_password);
 
-        if (verify_params(email, password)){
-            verifyUser(email.getText().toString(), password.getText().toString());
+        if (verify_params(email, password)){ // Verify that fields are properly filled out
+            verifyUser(email.getText().toString(), password.getText().toString()); // Verify user exists and info matches with database
         }
     }
 
@@ -91,13 +97,16 @@ public class SplashActivity extends AppCompatActivity {
         this.imageView = findViewById(R.id.avatar);
         if (verify_params(true, email, password, name)){
             saveUserPicture(name.getText().toString());
-            registerUser(email.getText().toString(), password.getText().toString(), name.getText().toString());
+            registerUser(email.getText().toString(), password.getText().toString(), name.getText().toString()); // Register user in database
             Intent intent = new Intent(getBaseContext(), MapsActivity.class);
-            intent.putExtra("user_email", email.getText().toString());
-            startActivity(intent);
+            intent.putExtra("user_email", email.getText().toString()); // Pass user_email to new activity
+            startActivity(intent); // Start maps activity
         }
     }
-    
+
+    /**
+     *  Function that starts an intent and requests to take an image capture
+     */
     public void on_picture_button_click(View view){
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
@@ -116,7 +125,7 @@ public class SplashActivity extends AppCompatActivity {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle  extras = data.getExtras();
             Bitmap  user_photo = (Bitmap) extras.get("data");
-            if (user_photo != null) {
+            if (user_photo != null) { // If a picture was taken (no longer default avatar)
                 this.imageView.setImageBitmap(user_photo);
                 this.imageView.setLayoutParams(new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.MATCH_PARENT,
@@ -126,17 +135,22 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *  Function that saves the user taken picture to the Firebase storage
+     */
     public void saveUserPicture(String name){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         this.imageView.buildDrawingCache();
-        this.imageView.getDrawingCache().compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        this.imageView.getDrawingCache().compress(Bitmap.CompressFormat.JPEG, 100, baos); // Encode information to the byte array output stream
         byte[] imageEncoded = Base64.encode(baos.toByteArray(), Base64.DEFAULT);
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("Base64 - " + name);
-        ref.putBytes(imageEncoded);
+        ref.putBytes(imageEncoded); // Save base64 of picture in Firebase storage
     }
 
+    /**
+     *  Function that saves the user into the database
+     */
     public void registerUser(String email, String password, String name){
-        Log.i("tag", "registering user");
         // Create a new user with a first and last name
         Map<String, Object> user = new HashMap<>();
         user.put("email", email);
@@ -146,10 +160,14 @@ public class SplashActivity extends AppCompatActivity {
         db.collection("users").document(email).set(user);
     }
 
+    /**
+     *  Function that compares the given email and password with the information in the database
+     */
     public void verifyUser(String email, String password){
         Task<DocumentSnapshot> document = db.collection("users").document(email).get();
         document.addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
+                // Check if password matches with given email
                 if (password.equals(task.getResult().getData().get("password").toString())){
                     Intent intent = new Intent(getBaseContext(), MapsActivity.class);
                     intent.putExtra("user_email", email);
@@ -164,6 +182,9 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
+    /**
+     *  Given a list of parameters, checks to see if it properly filled out. If not, shows error message
+     */
     public boolean verify_params(EditText email, EditText password){
         boolean valid_params = true;
         if (!isEmailValid(email.getText().toString())){
@@ -182,6 +203,9 @@ public class SplashActivity extends AppCompatActivity {
         return valid_params;
     }
 
+    /**
+     *  Given a list of parameters, checks to see if it properly filled out. If not, shows error message
+     */
     public boolean verify_params(boolean isSignUp, EditText email, EditText password, EditText name){
         boolean valid_params;
         valid_params = verify_params(email, password);
@@ -197,6 +221,9 @@ public class SplashActivity extends AppCompatActivity {
         return valid_params;
     }
 
+    /**
+     *  Function that compares an email string with a Regex to verify that email field is correct
+     */
     public boolean isEmailValid(String email) {
         String expression = "^[\\w\\.-]+@([\\w\\-]+\\.)+[A-Z]{2,4}$";
         Pattern pattern = Pattern.compile(expression, Pattern.CASE_INSENSITIVE);

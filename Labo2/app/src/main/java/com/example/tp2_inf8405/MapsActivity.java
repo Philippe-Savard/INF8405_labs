@@ -99,8 +99,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private boolean activityRecognitionPermissionGranted;
     private static final int PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION = 2;
 
-
-
     /////////////////////////////////////
     //        OTHER ATTRIBUTES         //
     /////////////////////////////////////
@@ -122,8 +120,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private Intent batteryStatus = new Intent();
     private BatteryManager batteryManager;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,12 +130,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         hideToolBar();
 
 
-        user_email = getIntent().getStringExtra("user_email");
-
+        user_email = getIntent().getStringExtra("user_email"); // Collect email from previous activity
         txt_device = findViewById(R.id.txt_devicetitle);
-
         bottomNavigationView = findViewById(R.id.nav_bar);
-
 
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         batteryStatus = registerReceiver(null, ifilter);
@@ -216,11 +209,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
                     isDayMode = false;
                 }
             }
-
             @Override
-            public void onAccuracyChanged(Sensor sensor, int i) {
-
-            }
+            public void onAccuracyChanged(Sensor sensor, int i) {}
         };
 
         sensorManager.registerListener(lightSensorListener, lightSensor, SensorManager.SENSOR_DELAY_UI);
@@ -242,7 +232,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         dataUpdateThread.start();
 
     }
-
 
     /**
      * Manipulates the map when it's available.
@@ -367,9 +356,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         });
     }
 
-
-
-
     ////////////////////////////////////////////
     //       BLUETOOTH RELATED FUNCTIONS      //
     ////////////////////////////////////////////
@@ -477,14 +463,11 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         device.put("latitude", moreInfo[6]);
         device.put("longitude", moreInfo[7]);
         db.collection("users").document(user_email).collection("devices").document(deviceMACAddress).set(device);
-
-
     }
 
     ////////////////////////////////////////////
     //         MARKER RELATED FUNCTIONS       //
     ////////////////////////////////////////////
-
     /**
      * Function to add a device to the device's list
      * @param deviceMACAddress the MAC Address of the device to add to the marker's list
@@ -527,7 +510,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     ////////////////////////////////////////////
     //         VIEW RELATED FUNCTIONS         //
     ////////////////////////////////////////////
-
     /**
      *  Function that updates the devices on the side view depending if we are in favorite view or not
      */
