@@ -1,7 +1,5 @@
 package com.example.tp2_inf8405;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
@@ -16,7 +14,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.LinearLayout;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -32,11 +32,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SplashActivity extends AppCompatActivity {
-    TextView textView;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView imageView;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
-    Bitmap user_photo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +79,7 @@ public class SplashActivity extends AppCompatActivity {
         EditText email = findViewById(R.id.login_email);
         EditText password = findViewById(R.id.login_password);
 
-        if (verify_params(true, email, password)){
+        if (verify_params(email, password)){
             verifyUser(email.getText().toString(), password.getText().toString());
         }
     }
@@ -90,7 +88,7 @@ public class SplashActivity extends AppCompatActivity {
         EditText name = findViewById(R.id.signup_name);
         EditText email = findViewById(R.id.signup_email);
         EditText password = findViewById(R.id.signup_password);
-
+        this.imageView = findViewById(R.id.avatar);
         if (verify_params(true, email, password, name)){
             saveUserPicture(name.getText().toString());
             registerUser(email.getText().toString(), password.getText().toString(), name.getText().toString());
@@ -101,7 +99,6 @@ public class SplashActivity extends AppCompatActivity {
     }
     
     public void on_picture_button_click(View view){
-        this.imageView = findViewById(R.id.avatar);
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
             if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
@@ -115,18 +112,24 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        this.imageView = findViewById(R.id.avatar);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             Bundle  extras = data.getExtras();
             Bitmap  user_photo = (Bitmap) extras.get("data");
             if (user_photo != null) {
                 this.imageView.setImageBitmap(user_photo);
+                this.imageView.setLayoutParams(new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.MATCH_PARENT
+                ));
             }
         }
     }
 
     public void saveUserPicture(String name){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        this.user_photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        this.imageView.buildDrawingCache();
+        this.imageView.getDrawingCache().compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageEncoded = Base64.encode(baos.toByteArray(), Base64.DEFAULT);
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("Base64 - " + name);
         ref.putBytes(imageEncoded);
@@ -161,7 +164,7 @@ public class SplashActivity extends AppCompatActivity {
 
     }
 
-    public boolean verify_params(boolean isSignUp, EditText email, EditText password){
+    public boolean verify_params(EditText email, EditText password){
         boolean valid_params = true;
         if (!isEmailValid(email.getText().toString())){
             findViewById(R.id.incorrect_email).setVisibility(View.VISIBLE);
@@ -180,8 +183,8 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     public boolean verify_params(boolean isSignUp, EditText email, EditText password, EditText name){
-        boolean valid_params = true;
-        valid_params = verify_params(isSignUp, email, password);
+        boolean valid_params;
+        valid_params = verify_params(email, password);
 
         if (isSignUp){
             if (name.getText().toString().isEmpty()){
@@ -211,7 +214,7 @@ public class SplashActivity extends AppCompatActivity {
     }
     /**
      * Function that displays the device information in a uniform way.
-     * @param lang the choosen language to set
+     * @param lang the chosen language to set
      */
     private void setLocale(String lang) {
         Locale locale = new Locale(lang);
@@ -231,7 +234,7 @@ public class SplashActivity extends AppCompatActivity {
      */
     public void loadLocale(){
         SharedPreferences prefs = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
-        String langue = prefs.getString("My Language", "");
-        setLocale(langue);
+        String language = prefs.getString("My Language", "");
+        setLocale(language);
     }
 }
