@@ -4,7 +4,6 @@
     android:id="@+id/bluetooth_info"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:minWidth="500dp"
     android:minHeight="350dp"
     android:background="@drawable/rounded_corners"
     android:theme="@style/Theme.TP2_INF8405">
