@@ -7,7 +7,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -97,7 +96,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private TextView energy;
     private Sensor stepSensor;
     private Sensor lightSensor;
-    private boolean activityRecongnitionPermissionGranted;
+    private boolean activityRecognitionPermissionGranted;
     private static final int PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION = 2;
 
 
@@ -106,13 +105,12 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     //        OTHER ATTRIBUTES         //
     /////////////////////////////////////
     static boolean isDayMode = true;
-    private ArrayList<Marker> markers = new ArrayList<>();
-    private Stack<String> favorites = new Stack<>();
-    private HashMap<String, String[]> devices = new HashMap<>();
+    private final ArrayList<Marker> markers = new ArrayList<>();
+    private final Stack<String> favorites = new Stack<>();
+    private final HashMap<String, String[]> devices = new HashMap<>();
     Thread discoveryThread;
     Thread dataUpdateThread;
     private static Boolean isFavoriteView = false;
-    private static Boolean threadStarted = false;
     private final int UNCATEGORIZED = 7936;
     private static String user_email = "";
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -164,7 +162,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         deviceSensors = sensorManager.getSensorList(Sensor.TYPE_ALL);
 
         getPhysicalActivityPermission();
-        if (activityRecongnitionPermissionGranted) {
+        if (activityRecognitionPermissionGranted) {
             stepSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_COUNTER);
         }
 
@@ -515,14 +513,14 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     }
 
     /**
-     * onClikEvent for the markers
+     * onClickEvent for the markers
      * @param marker current marker that have been clicked
      * @return
      */
     @Override
     public boolean onMarkerClick(final Marker marker) {
         // Retrieve the data from the marker.
-        this.devicePopUpWindow(findViewById(R.id.layout_map_view), (String) marker.getTag());
+        this.devicePopUpWindow((String) marker.getTag());
         return false;
     }
 
@@ -556,7 +554,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
         elementName.setLayoutParams(params);
         elementName.setClickable(true);
         // Assures to create bluetooth popUp with MAC address upon device click
-        elementName.setOnClickListener(view -> this.devicePopUpWindow(view, deviceMACAddress));
+        elementName.setOnClickListener(view -> this.devicePopUpWindow(deviceMACAddress));
         // Only add device name and MAC to side panel view
         String deviceInfo = Objects.requireNonNull(devices.get(deviceMACAddress))[0] + "\n" + deviceMACAddress;
 
@@ -587,10 +585,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
 
     /**
      * Makes the AlertDialog appear
-     * @param view the current view
      * @param deviceMACAddress the MAC address to display.
      */
-    public void devicePopUpWindow(View view, String deviceMACAddress) {
+    public void devicePopUpWindow(String deviceMACAddress) {
         LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);
         View popupView = inflater.inflate(R.layout.on_bluetooth_click, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -653,7 +650,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
     private void getPhysicalActivityPermission() {
         if (ContextCompat.checkSelfPermission(this.getApplicationContext(),
                 Manifest.permission.ACTIVITY_RECOGNITION) == PackageManager.PERMISSION_GRANTED) {
-            activityRecongnitionPermissionGranted = true;
+            activityRecognitionPermissionGranted = true;
         } else {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACTIVITY_RECOGNITION},
                     PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION);
@@ -675,7 +672,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
             }
         } else if (requestCode == PERMISSIONS_REQUEST_ACCESS_ACTIVITY_RECOGNITION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                activityRecongnitionPermissionGranted = true;
+                activityRecognitionPermissionGranted = true;
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -842,7 +839,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
 
     /**
      * Function that displays the device information in a uniform way.
-     * @param lang the choosen language to set
+     * @param lang the chosen language to set
      */
 
     private void setLocale(String lang) {
@@ -863,8 +860,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMarke
      */
     public void loadLocale(){
         SharedPreferences prefs = getSharedPreferences("Settings", Activity.MODE_PRIVATE);
-        String langue = prefs.getString("My Language", "");
-        setLocale(langue);
+        String language = prefs.getString("My Language", "");
+        setLocale(language);
     }
 
     //////////////////////////////////////
