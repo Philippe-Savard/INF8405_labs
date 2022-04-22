@@ -1,6 +1,5 @@
 package com.example.tp2_inf8405;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.provider.MediaStore;
@@ -20,22 +18,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -95,8 +84,8 @@ public class SplashActivity extends AppCompatActivity {
         if (verify_params(true, email, password)){
             verifyUser(email.getText().toString(), password.getText().toString());
         }
-
     }
+
     public void on_signup_button_click(View view){
         EditText name = findViewById(R.id.signup_name);
         EditText email = findViewById(R.id.signup_email);
@@ -110,12 +99,14 @@ public class SplashActivity extends AppCompatActivity {
             startActivity(intent);
         }
     }
-
+    
     public void on_picture_button_click(View view){
-        imageView = findViewById(R.id.avatar);
+        this.imageView = findViewById(R.id.avatar);
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         try {
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+            }
         } catch (ActivityNotFoundException e) {
             // display error state to the user
         }
@@ -125,14 +116,17 @@ public class SplashActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            user_photo = (Bitmap) data.getExtras().get("data");
-            imageView.setImageBitmap(user_photo);
+            Bundle  extras = data.getExtras();
+            Bitmap  user_photo = (Bitmap) extras.get("data");
+            if (user_photo != null) {
+                this.imageView.setImageBitmap(user_photo);
+            }
         }
     }
 
     public void saveUserPicture(String name){
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        user_photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        this.user_photo.compress(Bitmap.CompressFormat.JPEG, 100, baos);
         byte[] imageEncoded = Base64.encode(baos.toByteArray(), Base64.DEFAULT);
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("Base64 - " + name);
         ref.putBytes(imageEncoded);
